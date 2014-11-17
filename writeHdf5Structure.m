@@ -1,7 +1,7 @@
 function writeHdf5Structure(file, root, structure)
 % Creates a HDF5 file and writes the contents of a structure to it
 %
-% writeHDF5Parameters(file, root, structure)
+% writeHdf5Structure(file, root, structure)
 %
 % Input:
 %   file            The name of the file
