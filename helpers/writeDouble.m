@@ -4,11 +4,14 @@ function writeDouble(fileId, dataset, value)
 % writeDouble(fileId, dataset, value)
 %
 % Input:
-%   fileId            The file id 
-%   dataset           The path of the dataset 
+%   fileId            The file id
+%   dataset           The path of the dataset
 %   value             The value of the dataset
 %
 
+if isempty(value)
+    value = NaN;
+end
 valueType = H5T.copy('H5T_NATIVE_DOUBLE');
 dims = size(value);
 flippedDims = fliplr(dims);

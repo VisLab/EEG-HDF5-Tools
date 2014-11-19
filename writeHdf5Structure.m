@@ -23,62 +23,44 @@ H5F.close(fileId);
                     writeCellStr(fileId, [path, '/', fieldNames{a}], ...
                         {structure.(fieldNames{a})})
                 case 'char'
-                    if isempty(structure.(fieldNames{a}))
-                        writeEmptyStr(fileId, [path, '/', ...
-                            fieldNames{a}]);
-                    else
-                        writeStr(fileId, [path, '/', fieldNames{a}], ...
-                            structure.(fieldNames{a}));
-                    end
+                    writeStr(fileId, [path, '/', fieldNames{a}], ...
+                        structure.(fieldNames{a}));
                 case 'double'
-                    if isempty(structure.(fieldNames{a}))
-                        writeEmptyDouble(fileId, [path, '/', ...
-                            fieldNames{a}])
-                    else
-                        writeDouble(fileId, ...
-                            [path, '/', fieldNames{a}], ...
-                            structure.(fieldNames{a}));
-                    end
+                    writeDouble(fileId, ...
+                        [path, '/', fieldNames{a}], ...
+                        structure.(fieldNames{a}));
                 case 'single'
-                    if isempty(structure.(fieldNames{a}))
-                        writeEmptySingle(fileId, [path, '/', ...
-                            fieldNames{a}]);
-                    else
-                        writeSingle(fileId, ...
-                            [path, '/', fieldNames{a}], ...
-                            structure.(fieldNames{a}));
-                    end
+                    writeSingle(fileId, ...
+                        [path, '/', fieldNames{a}], ...
+                        structure.(fieldNames{a}));
                 case 'struct'
-                    writeGroup(fileId, [path, '/', fieldNames{a}]);
-                    if length(structure.(fieldNames{a})) == 1
+                    if isscalar(structure.(fieldNames{a})) || ...
+                            isNestedStructure(structure.(fieldNames{a}))
+                        writeGroup(fileId, [path, '/', fieldNames{a}]);
                         addDataset(fileId, [path, '/', fieldNames{a}], ...
                             structure.(fieldNames{a}));
                     else
-                        addStructureArray(fileId, [path, '/', ...
-                            fieldNames{a}], structure.(fieldNames{a}));
+                        writeStructure(fileId, ...
+                            [path, '/', fieldNames{a}], ...
+                            structure.(fieldNames{a}));
                     end
             end
         end
     end % addDataset
 
-    function addStructureArray(fileId, path, structure)
-        % Writes the structure array field values to the file under the
-        % specified path
+    function nestedStructure = isNestedStructure(structure)
+        % Checks to see if a structure contains a nested field
+        nestedStructure = false;
+        if ~isscalar(structure)
+            return
+        end
         fieldNames = fieldnames(structure);
         for a = 1:length(fieldNames)
-            switch class(structure(1).(fieldNames{a}))
-                case 'char'
-                    writeCellStr(fileId, [path, '/', fieldNames{a}], ...
-                        {structure.(fieldNames{a})})
-                case 'double'
-                    writeDoubleCellArray(fileId, [path, '/', ...
-                        fieldNames{a}], {structure.(fieldNames{a})})
-                case 'single'
-                    writeSingleCellArray(fileId, [path, '/', ...
-                        fieldNames{a}], {structure.(fieldNames{a})})
+            if isstruct(structure.(fieldNames{a}))
+                nestedStructure = true;
             end
         end
-    end % addStructureArray
+    end % isNestedStructure
 
 end % writeHdf5Structure
 

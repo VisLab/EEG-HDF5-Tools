@@ -4,11 +4,14 @@ function writeSingle(fileId, dataset, value)
 % writeSingle(fileId, dataset, value)
 %
 % Input:
-%   fileId            The file id 
-%   dataset           The path of the dataset 
+%   fileId            The file id
+%   dataset           The path of the dataset
 %   value             The value of the dataset
 %
 
+if isempty(value)
+    value = NaN;
+end
 valueType = H5T.copy('H5T_NATIVE_FLOAT');
 dims = size(value);
 flippedDims = fliplr(dims);
@@ -20,5 +23,5 @@ H5D.write(datasetId, valueType, 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT', ...
 H5D.close(datasetId);
 H5S.close(spaceId);
 
-end % writeDouble
+end % writeSingle
 

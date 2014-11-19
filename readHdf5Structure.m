@@ -1,16 +1,11 @@
 function hdf5Struct = readHdf5Structure(file)
 fileId = H5F.open(file,'H5F_ACC_RDONLY','H5P_DEFAULT');
-% Get root group
 hdf5Path = '/';
 childStructure = getGroupChildren(fileId, hdf5Path);
-% Get top group
 hdf5Path = [hdf5Path, childStructure.name];
 childStructure = getGroupChildren(fileId, hdf5Path);
-% Create empty fields
 hdf5Struct = createEmptyStructFields({childStructure.name});
-% Populate fields
 hdf5Struct = readHdf5Data(fileId, hdf5Path, hdf5Struct, childStructure);
-% Close everything
 H5F.close(fileId);
 
     function parentStructure = readHdf5Data(fileId, hdf5Path, ...
@@ -37,16 +32,22 @@ H5F.close(fileId);
 
     function dataset = readDataset(fileId, datasetPath)
         datasetId = H5D.open(fileId, datasetPath);
-        dataType = H5D.get_type(datasetId);
         dataset = H5D.read(datasetId);
-        dataset = postProcessData(dataType, dataset);
+        dataset = postProcessData(dataset);
         H5D.close(datasetId);
     end
 
-    function dataset = postProcessData(dataType, dataset)
-        switch (dataType)
-            case H5ML.get_constant_value('H5T_STRING')
-                dataset = dataset';
+    function dataset = postProcessData(dataset)
+        if ischar(dataset)
+            dataset = dataset';
+        end
+        if isnan(dataset)
+            dataset = [];
+        end
+        if isstruct(dataset)
+            fieldNames = fieldnames(datasets);
+            for a = 1:length(cell2struct)
+            end
         end
     end
 
