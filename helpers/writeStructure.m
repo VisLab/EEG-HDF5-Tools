@@ -63,7 +63,8 @@ H5S.close(spaceId);
         dataTypes = cell(1, length(fieldNames));
         dataSizes = zeros(1, length(fieldNames));
         for a = 1:length(fieldNames)
-            switch class(structure(1).(fieldNames{a}))
+            index = findFirstNonEmptyIndex(structure, fieldNames{a});
+            switch class(structure(index).(fieldNames{a}))
                 case 'char'
                     scalarStructure.(fieldNames{a}) = ...
                         {structure.(fieldNames{a})};
@@ -99,6 +100,17 @@ H5S.close(spaceId);
             end
         end
     end % getStructureInfo
+
+    function index = findFirstNonEmptyIndex(structureArray, fieldName)
+        % Finds the first non-empty index of a field in a structure array
+        index = 1;
+        for a = 1:length(structureArray)
+            if ~isempty(structureArray(a).(fieldName))
+                index = a;
+                return
+            end
+        end
+    end
 
 end % writeStructure
 

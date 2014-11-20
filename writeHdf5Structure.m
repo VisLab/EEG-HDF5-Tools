@@ -34,12 +34,12 @@ H5F.close(fileId);
                         [path, '/', fieldNames{a}], ...
                         structure.(fieldNames{a}));
                 case 'struct'
-                    if isscalar(structure.(fieldNames{a})) || ...
-                            isNestedStructure(structure.(fieldNames{a}))
+                    if isscalar(structure.(fieldNames{a}))
                         writeGroup(fileId, [path, '/', fieldNames{a}]);
                         addDataset(fileId, [path, '/', fieldNames{a}], ...
                             structure.(fieldNames{a}));
-                    else
+                    elseif ~isscalar(structure.(fieldNames{a})) && ...
+                            ~isNestedStructure(structure.(fieldNames{a}))
                         writeStructure(fileId, ...
                             [path, '/', fieldNames{a}], ...
                             structure.(fieldNames{a}));
@@ -51,13 +51,12 @@ H5F.close(fileId);
     function nestedStructure = isNestedStructure(structure)
         % Checks to see if a structure contains a nested field
         nestedStructure = false;
-        if ~isscalar(structure)
-            return
-        end
         fieldNames = fieldnames(structure);
-        for a = 1:length(fieldNames)
-            if isstruct(structure.(fieldNames{a}))
-                nestedStructure = true;
+        for a = 1:length(structure)           
+            for b = 1:length(fieldNames)
+                if isstruct(structure(a).(fieldNames{b}))
+                    nestedStructure = true;
+                end
             end
         end
     end % isNestedStructure
