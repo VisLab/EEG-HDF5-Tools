@@ -49,27 +49,38 @@ H5F.close(fileId);
         H5G.close(groupId);
     end % getGroupDatasets
 
-    function dataset = postProcessDataset(dataset)
+    function dataset = postProcessDataset(dataset, datasetId, ...
+            isStructField)
         % Processes the dataset
         if isstruct(dataset)
             dataset = struct2StructArray(dataset);
         elseif ischar(dataset)
             dataset = dataset';
         elseif isnan(dataset)
+            dims = [0, 0];
+            if ~isStructField
+                dims = readAttribute(datasetId, 'dims');
+            end
             switch class(dataset)
                 case 'single'
-                    dataset = single([]);
+                    dataset = single.empty(dims);
                 case 'double'
-                    dataset = double([]);
+                    dataset = double.empty(dims);
             end
         end
     end % postProcessDataset
+
+    function attributeValue = readAttribute(datasetId, attribute)
+        % Reads a attribute
+        attributeId = H5A.open(datasetId, attribute);
+        attributeValue = H5A.read(attributeId);
+    end % readAttribute
 
     function dataset = readDataset(fileId, datasetPath)
         % Reads a dataset
         datasetId = H5D.open(fileId, datasetPath);
         dataset = H5D.read(datasetId);
-        dataset = postProcessDataset(dataset);
+        dataset = postProcessDataset(dataset, datasetId, false);
         H5D.close(datasetId);
     end % readDataset
 
@@ -107,7 +118,8 @@ H5F.close(fileId);
                         structure.(fieldNames{b}){a};
                 else
                     structValues{b, 1, a} = ...
-                        postProcessDataset(structure.(fieldNames{b})(a));
+                        postProcessDataset(...
+                        structure.(fieldNames{b})(a), [], true);
                 end
             end
         end

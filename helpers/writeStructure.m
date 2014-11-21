@@ -110,7 +110,7 @@ H5S.close(spaceId);
                 return
             end
         end
-    end
+    end % findFirstNonEmptyIndex
 
 end % writeStructure
 
