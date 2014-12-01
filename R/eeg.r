@@ -3,7 +3,8 @@ library("rhdf5")
 setClass("HDReader",
   representation(
     file="character",
-    contents="data.frame"))
+    contents="data.frame"
+))
 
 # Constructor
 HDReader <- function(file) {
@@ -50,34 +51,12 @@ setMethod(".access", signature(object="HDReader"),
 
 setClass("channelLocations",
   representation(reader="HDReader",
-                 x="matrix",
-                 y="matrix",
-                 z="matrix",
-                 labels="matrix",
-                 radius="matrix",
-                 ref="matrix",
-                 sph_phi="matrix",
-                 sph_radius="matrix",
-                 sph_theta="matrix",
-                 theta="matrix",
-                 type="matrix",
-                 urchan="matrix"
-  ))
+                 data="data.frame"
+))
 
 ChannelLocations <- function(reader) {
   new("channelLocations",
       reader=reader,
-      x=.reference.channelLocations.X(reader),
-      y=.reference.channelLocations.Y(reader),
-      z=.reference.channelLocations.Z(reader),
-      labels=.reference.channelLocations.labels(reader),
-      radius=.reference.channelLocations.radius(reader),
-      ref=.reference.channelLocations.ref(reader),
-      sph_phi=.reference.channelLocations.sph_phi(reader),
-      sph_radius=.reference.channelLocations.sph_radius(reader),
-      sph_theta=.reference.channelLocations.sph_theta(reader),
-      theta=.reference.channelLocations.theta(reader),
-      type=.reference.channelLocations.type(reader),
-      urchan=.reference.channelLocations.urchan(reader)
+      data=data.frame(.reference.channelLocations(reader))
       )  
 }
