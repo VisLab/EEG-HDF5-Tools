@@ -1,12 +1,13 @@
 library("rhdf5")
 
+# HDReader
 setClass("HDReader",
   representation(
     file="character",
     contents="data.frame"
 ))
 
-# Constructor
+# constructor
 HDReader <- function(file) {
   contents <- h5ls(file)
   np <- new("HDReader", file=file, contents=contents)
@@ -27,36 +28,65 @@ setMethod(".access", signature(object="HDReader"),
 
 # generates the functions to read in specific fields from the HDF5 file, i.e
 # reference.channelInformation(new HDReader("file")) to read the
-# channelInformation field. All the functions are private
+# channelInformation field.
 .gen <- function(np) {
   for (i in 1:length(np@contents$name)) {
     row <- np@contents[i, ]
-    if (toString(row$otype) == "H5I_DATASET") {
-      section <- paste(row$group, row$name, sep="/")
-      fName <- gsub("([a-z])/", "\\1.",
-                    gsub("^/noisyParameters/", ".", section))
-      # generate generic methods
-      setGeneric(fName,
-        eval(substitute(function(object) {
-          return(.access(object, section))
-        })))
+    
+    section <- paste(row$group, row$name, sep="/")
+    fName <- gsub("([a-z])/", "\\1.",
+                  gsub("^/noisyParameters/", ".", section))
+    # generate generic methods
+    setGeneric(fName,
+      eval(substitute(function(object) {
+        return(.access(object, section))
+      })))
       
-      setMethod(fName, signature(object="HDReader"),
-        eval(substitute(function(object) {
-          return(.access(object, section))
-        })))
-    }
+    setMethod(fName, signature(object="HDReader"),
+      eval(substitute(function(object) {
+        return(.access(object, section))
+      })))
   }
 }
 
+# NoisyParameters
+setClass("noisyParameters",
+  representation(reader="HDReader",
+                 high.pass="list",
+                 line.noise="list",
+                 reference="list",
+                 resampling="list",
+                 version="list"))
+
+# constructor
+NoisyParameters <- function(reader) {
+  # lazy load reference
+  delayedAssign("this.reference", reference(reader))
+  
+  new("noisyParameters",
+      reader=reader,
+      high.pass=.highPass(reader),
+      line.noise=.lineNoise(reader),
+      reference=this.reference,
+      resampling=.resampling(reader),
+      version=.version(reader))
+}
+
+# ChannelLocations
 setClass("channelLocations",
   representation(reader="HDReader",
-                 data="data.frame"
+                 reference="data.frame",
+                 noisy.out="data.frame",
+                 noisy.out.original="data.frame"
 ))
 
+# constructor
 ChannelLocations <- function(reader) {
   new("channelLocations",
       reader=reader,
-      data=data.frame(.reference.channelLocations(reader))
+      reference=data.frame(.reference.channelLocations(reader)),
+      noisy.out=data.frame(.reference.noisyOut.channelLocations(reader)),
+      noisy.out.original=data.frame(
+        .reference.noisyOutOriginal.channelLocations(reader))
       )  
 }
