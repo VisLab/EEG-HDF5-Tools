@@ -1,5 +1,9 @@
 library("rhdf5")
 
+# Reads a HDF5 file into a NoisyParameters object.
+#   np <- NoisyParameter("file.h5")
+#   np@resampling$originalFrequency
+
 # HDReader
 setClass("HDReader",
   representation(
@@ -8,7 +12,7 @@ setClass("HDReader",
 ))
 
 # constructor
-HDReader <- function(file) {
+.HDReader <- function(file) {
   contents <- h5ls(file)
   np <- new("HDReader", file=file, contents=contents)
   .gen(np)
@@ -44,7 +48,8 @@ setMethod(".access", signature(object="HDReader"),
       
     setMethod(fName, signature(object="HDReader"),
       eval(substitute(function(object) {
-        return(.access(object, section))
+        delayedAssign("toReturn", .access(object, section))
+        return(toReturn)
       })))
   }
 }
@@ -52,6 +57,7 @@ setMethod(".access", signature(object="HDReader"),
 # NoisyParameters
 setClass("noisyParameters",
   representation(reader="HDReader",
+                 name="character",
                  high.pass="list",
                  line.noise="list",
                  reference="list",
@@ -59,12 +65,14 @@ setClass("noisyParameters",
                  version="list"))
 
 # constructor
-NoisyParameters <- function(reader) {
+NoisyParameters <- function(file) {
+  reader <- .HDReader(file)
   # lazy load reference
-  delayedAssign("this.reference", reference(reader))
+  delayedAssign("this.reference", .reference(reader))
   
   new("noisyParameters",
       reader=reader,
+      name=.name(reader),
       high.pass=.highPass(reader),
       line.noise=.lineNoise(reader),
       reference=this.reference,
