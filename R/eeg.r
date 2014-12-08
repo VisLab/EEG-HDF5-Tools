@@ -48,53 +48,39 @@ setMethod(".access", signature(object="HDReader"),
       
     setMethod(fName, signature(object="HDReader"),
       eval(substitute(function(object) {
-        delayedAssign("toReturn", .access(object, section))
-        return(toReturn)
+        return(.access(object, section))
       })))
   }
 }
 
-# NoisyParameters
-setClass("noisyParameters",
-  representation(reader="HDReader",
-                 name="character",
-                 high.pass="list",
-                 line.noise="list",
-                 reference="list",
-                 resampling="list",
-                 version="list"))
-
-# constructor
+# Constructor for noisyParameters
+# dynamically generates the class and the attributes
 NoisyParameters <- function(file) {
-  reader <- .HDReader(file)
-  # lazy load reference
-  delayedAssign("this.reference", .reference(reader))
+  hd <- .HDReader(file)
+  slots <- list()
+  slots[["reader"]] <- "ANY"
+  slots[["name"]] <- "ANY"
+  for (i in 1:length(hd@contents$name)) {
+    row <- hd@contents[i, ]
+    # only grab the groups at the top-level
+    if (toString(row$otype) == "H5I_GROUP" && row$group=="/noisyParameters") {
+      slots[[row$name]] <- "ANY"
+    }
+  }
   
-  new("noisyParameters",
-      reader=reader,
-      name=.name(reader),
-      high.pass=.highPass(reader),
-      line.noise=.lineNoise(reader),
-      reference=this.reference,
-      resampling=.resampling(reader),
-      version=.version(reader))
-}
-
-# ChannelLocations
-setClass("channelLocations",
-  representation(reader="HDReader",
-                 reference="data.frame",
-                 noisy.out="data.frame",
-                 noisy.out.original="data.frame"
-))
-
-# constructor
-ChannelLocations <- function(reader) {
-  new("channelLocations",
-      reader=reader,
-      reference=data.frame(.reference.channelLocations(reader)),
-      noisy.out=data.frame(.reference.noisyOut.channelLocations(reader)),
-      noisy.out.original=data.frame(
-        .reference.noisyOutOriginal.channelLocations(reader))
-      )  
+  setClass('noisyParameters', slots=slots)
+  np <- new("noisyParameters")
+  slot(np, "reader") <- hd
+  slot(np, "name") <- .name(hd)
+  
+  names <- slotNames(np)
+  names.length <- length(names)
+  
+  
+  for (i in 2:names.length) {
+    func <- paste("function() { return(", ".",names[i], "(hd)", ")}", sep="")
+    slot(np, names[i]) <- 
+      eval(parse(text=func))
+  }
+  return(np)
 }
