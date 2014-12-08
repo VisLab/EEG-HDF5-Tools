@@ -54,7 +54,7 @@ setMethod(".access", signature(object="HDReader"),
 }
 
 # Constructor for noisyParameters
-# dynamically generates the class and the attributes
+# dynamically generates the class, attributes, and methods
 NoisyParameters <- function(file) {
   hd <- .HDReader(file)
   slots <- list()
@@ -76,11 +76,32 @@ NoisyParameters <- function(file) {
   names <- slotNames(np)
   names.length <- length(names)
   
-  
   for (i in 2:names.length) {
-    func <- paste("function() { return(", ".",names[i], "(hd)", ")}", sep="")
-    slot(np, names[i]) <- 
-      eval(parse(text=func))
+    # wrap the attributes in function to feign lazy evaluation
+    func <- paste("function(eval=T) {
+                    return(", ".", names[i], "(hd)", ") }",
+                  sep="")
+    slot(np, names[i]) <- eval(parse(text=func))
+    
+    with.param <- paste("function(object) { object@", names[i], " <- ",
+                        "object@", names[i], "();", "return(object) }", sep="")
+    with.param.name <- paste("with.", names[i], sep="")
+    
+    get.param <- paste("function(object) { ",
+                          "object <- with.", names[i], "(object); ",
+                          "return(object@", names[i], ") }",
+                       sep="")
+    get.param.name <- paste("get.", names[i], sep="")
+    
+    # forces evaluation
+    setGeneric(with.param.name, eval(parse(text=with.param)))
+    setMethod(with.param.name, signature(object="noisyParameters"),
+                                         eval(parse(text=with.param)))
+    # gets the attribute
+    setGeneric(get.param.name, eval(parse(text=get.param)))
+    setMethod(get.param.name, signature(object="noisyParameters"),
+                                          eval(parse(text=get.param)))
   }
+  
   return(np)
 }
