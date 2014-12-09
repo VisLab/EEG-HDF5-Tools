@@ -34,7 +34,7 @@ setMethod(".access", signature(object="HDReader"),
 # reference.channelInformation(new HDReader("file")) to read the
 # channelInformation field.
 .gen <- function(np) {
-  for (i in 1:length(np@contents$name)) {
+  for (i in 2:length(np@contents$name)) {
     row <- np@contents[i, ]
     
     section <- paste(row$group, row$name, sep="/")
@@ -60,7 +60,7 @@ NoisyParameters <- function(file) {
   slots <- list()
   slots[["reader"]] <- "ANY"
   slots[["name"]] <- "ANY"
-  for (i in 1:length(hd@contents$name)) {
+  for (i in 2:length(hd@contents$name)) {
     row <- hd@contents[i, ]
     # only grab the groups at the top-level
     if (toString(row$otype) == "H5I_GROUP" && row$group=="/noisyParameters") {
@@ -76,7 +76,7 @@ NoisyParameters <- function(file) {
   names <- slotNames(np)
   names.length <- length(names)
   
-  for (i in 2:names.length) {
+  for (i in 3:names.length) {
     # wrap the attributes in function to feign lazy evaluation
     func <- paste("function(eval=T) {
                     return(", ".", names[i], "(hd)", ") }",
@@ -88,7 +88,8 @@ NoisyParameters <- function(file) {
     with.param.name <- paste("with.", names[i], sep="")
     
     get.param <- paste("function(object) { ",
-                          "object <- with.", names[i], "(object); ",
+                          "if (typeof(object@", names[i], ") == \"closure\") {",
+                            "object <- with.", names[i], "(object)} ; ",
                           "return(object@", names[i], ") }",
                        sep="")
     get.param.name <- paste("get.", names[i], sep="")
@@ -105,3 +106,19 @@ NoisyParameters <- function(file) {
   
   return(np)
 }
+
+setGeneric('with.all', function(object) {
+  standardGeneric('with.all')
+})
+
+setMethod('with.all', signature(object='noisyParameters'),
+  function(object) {
+    object.new <- object
+    slots <- slotNames(object)
+    for (i in 3:length(slots)) {
+      with <- paste('with.', slots[i], sep="")
+      with.func <- eval(parse(text=with))
+      object.new <- with.func(object.new)
+    }
+    return(object.new)
+  })
