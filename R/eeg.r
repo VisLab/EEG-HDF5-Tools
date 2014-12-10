@@ -122,3 +122,12 @@ setMethod('with.all', signature(object='noisyParameters'),
     }
     return(object.new)
   })
+
+setMethod("show", signature(object='noisyParameters'),
+  function(object) {
+    slots <- slotNames(object)[3:length(slotNames(object))]
+    file <- paste("file:", object@reader@file)
+    dataset <- paste("dataset:", object@name)
+    groups <- paste("groups:", paste(slots, collapse=", "))
+    cat(file, dataset, groups, sep="\n")
+  })
