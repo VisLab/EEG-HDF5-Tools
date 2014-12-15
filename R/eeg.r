@@ -15,7 +15,6 @@ setClass("HDReader",
 .HDReader <- function(file) {
   contents <- h5ls(file)
   np <- new("HDReader", file=file, contents=contents)
-  .gen(np)
   return(np)
 }
 
@@ -29,29 +28,6 @@ setMethod(".access", signature(object="HDReader"),
   function(object, part) {
     h5read(object@file, part)
 })
-
-# generates the functions to read in specific fields from the HDF5 file, i.e
-# reference.channelInformation(new HDReader("file")) to read the
-# channelInformation field.
-.gen <- function(np) {
-  for (i in 2:length(np@contents$name)) {
-    row <- np@contents[i, ]
-    
-    section <- paste(row$group, row$name, sep="/")
-    fName <- gsub("([a-z])/", "\\1.",
-                  gsub("^/noisyParameters/", ".", section))
-    # generate generic methods
-    setGeneric(fName,
-      eval(substitute(function(object) {
-        return(.access(object, section))
-      })))
-      
-    setMethod(fName, signature(object="HDReader"),
-      eval(substitute(function(object) {
-        return(.access(object, section))
-      })))
-  }
-}
 
 # Constructor for noisyParameters
 # dynamically generates the class, attributes, and methods
@@ -71,7 +47,7 @@ NoisyParameters <- function(file) {
   setClass('noisyParameters', slots=slots)
   np <- new("noisyParameters")
   slot(np, "reader") <- hd
-  slot(np, "name") <- .name(hd)
+  slot(np, "name") <- .access(hd, '/noisyParameters/name')
   
   names <- slotNames(np)
   names.length <- length(names)
@@ -79,50 +55,74 @@ NoisyParameters <- function(file) {
   for (i in 3:names.length) {
     # wrap the attributes in function to feign lazy evaluation
     func <- paste("function(eval=T) {
-                    return(", ".", names[i], "(hd)", ") }",
+                    return(", ".access(hd, \"/noisyParameters/", names[i], "\")) }",
                   sep="")
     slot(np, names[i]) <- eval(parse(text=func))
-    
-    with.param <- paste("function(object) { object@", names[i], " <- ",
-                        "object@", names[i], "();", "return(object) }", sep="")
-    with.param.name <- paste("with.", names[i], sep="")
-    
-    get.param <- paste("function(object) { ",
-                          "if (typeof(object@", names[i], ") == \"closure\") {",
-                            "object <- with.", names[i], "(object)} ; ",
-                          "return(object@", names[i], ") }",
-                       sep="")
-    get.param.name <- paste("get.", names[i], sep="")
-    
-    # forces evaluation
-    setGeneric(with.param.name, eval(parse(text=with.param)))
-    setMethod(with.param.name, signature(object="noisyParameters"),
-                                         eval(parse(text=with.param)))
-    # gets the attribute
-    setGeneric(get.param.name, eval(parse(text=get.param)))
-    setMethod(get.param.name, signature(object="noisyParameters"),
-                                          eval(parse(text=get.param)))
   }
-  
   return(np)
 }
 
-setGeneric('with.all', function(object) {
-  standardGeneric('with.all')
+# returns a group
+setGeneric('get.group', function(noisyParameters, ...) {
+    standardGeneric('get.group')
+  })
+
+setMethod('get.group', signature(noisyParameters='noisyParameters'),
+  function(noisyParameters, section) {
+    slots <- slotNames(noisyParameters)
+    if (section %in% slots) {
+      if (typeof(slot(np, section)) == "closure") {
+        noisyParameters <- force.eval(noisyParameters, section)
+      }
+      return(slot(noisyParameters, section))  
+      }
+  })
+
+# forces evaluation of a group
+setGeneric('force.eval', function(noisyParameters, ...) {
+  standardGeneric('force.eval')
 })
 
-setMethod('with.all', signature(object='noisyParameters'),
+setMethod('force.eval', signature(noisyParameters='noisyParameters'),
+  function(noisyParameters, section) {
+    slots <- slotNames(noisyParameters)
+    if (section %in% slots) {
+      if (typeof(slot(noisyParameters, section)) == "closure") {
+        slot(noisyParameters, section) <- slot(noisyParameters, section)()
+      }
+      return(noisyParameters)
+    }
+  })
+
+# forces evaluation of all groups
+setGeneric('force.all',
+  function(object) {
+    standardGeneric('force.all')
+  })
+
+setMethod('force.all', signature(object='noisyParameters'),
   function(object) {
     object.new <- object
     slots <- slotNames(object)
     for (i in 3:length(slots)) {
-      with <- paste('with.', slots[i], sep="")
-      with.func <- eval(parse(text=with))
-      object.new <- with.func(object.new)
+      object.new <- force.eval(object.new, slots[i])
     }
     return(object.new)
   })
 
+# shows the groups in the object
+setGeneric('groups',
+  function(object) {
+    standardGeneric('groups')
+  })
+
+setMethod('groups', signature(object='noisyParameters'),
+  function(object) {
+    slots <- slotNames(object)
+    return(slots[3:length(slots)])
+})
+
+# custom show function
 setMethod("show", signature(object='noisyParameters'),
   function(object) {
     slots <- slotNames(object)[3:length(slotNames(object))]
