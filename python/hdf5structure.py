@@ -9,7 +9,7 @@ except ImportError:
     sys.exit()
 
 
-class NoisyParameters(object):
+class Hdf5Structure(object):
     def __init__(self, h5file):
         """
         :param h5file: path to the HDF5 file
@@ -66,5 +66,5 @@ class NoisyParameters(object):
         return forced
 
     def __str__(self):
-        return "file: {0}\ndataset: {1}\ngroups: {2}".format(
-            self._filename, self._dataset, ", ".join(self.groups()))
+        return "file: {0}\ngroups: {1}".format(
+            self._filename, ", ".join(self.groups()))
