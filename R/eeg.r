@@ -1,7 +1,7 @@
 library("rhdf5")
 
-# Reads a HDF5 file into a NoisyParameters object.
-#   np <- NoisyParameter("file.h5")
+# Reads a HDF5 file into a hdf5Structure object.
+#   np <- Hdf5Structure("file.h5")
 #   np@resampling$originalFrequency
 
 # HDReader
@@ -29,9 +29,9 @@ setMethod(".access", signature(object="HDReader"),
     h5read(object@file, part)
 })
 
-# Constructor for noisyParameters
+# Constructor for hdf5Structure
 # dynamically generates the class, attributes, and methods
-NoisyParameters <- function(file) {
+Hdf5Structure <- function(file) {
   hd <- .HDReader(file)
   slots <- list()
   slots[["reader"]] <- "ANY"
@@ -44,8 +44,8 @@ NoisyParameters <- function(file) {
     }
   }
   
-  setClass('noisyParameters', slots=slots)
-  np <- new("noisyParameters")
+  setClass('hdf5Structure', slots=slots)
+  np <- new("hdf5Structure")
   slot(np, "reader") <- hd
   slot(np, "name") <- .access(hd, '/noisyParameters/name')
   
@@ -55,59 +55,43 @@ NoisyParameters <- function(file) {
   for (i in 3:names.length) {
     # wrap the attributes in function to feign lazy evaluation
     func <- paste("function(eval=T) {
-                    return(", ".access(hd, \"/noisyParameters/", names[i], "\")) }",
-                  sep="")
+                    return(", ".access(hd, \"/noisyParameters/", names[i],
+                  "\")) }", sep="")
     slot(np, names[i]) <- eval(parse(text=func))
   }
   return(np)
 }
 
 # returns a group
-setGeneric('get.group', function(noisyParameters, ...) {
+setGeneric('get.group', function(hdf5Structure, ...) {
     standardGeneric('get.group')
   })
 
-setMethod('get.group', signature(noisyParameters='noisyParameters'),
-  function(noisyParameters, section) {
-    slots <- slotNames(noisyParameters)
+setMethod('get.group', signature(hdf5Structure='hdf5Structure'),
+  function(hdf5Structure, section) {
+    slots <- slotNames(hdf5Structure)
     if (section %in% slots) {
       if (typeof(slot(np, section)) == "closure") {
-        noisyParameters <- force.eval(noisyParameters, section)
+        hdf5Structure <- .force.eval(hdf5Structure, section)
       }
-      return(slot(noisyParameters, section))  
+      return(slot(hdf5Structure, section))  
       }
   })
 
 # forces evaluation of a group
-setGeneric('force.eval', function(noisyParameters, ...) {
-  standardGeneric('force.eval')
+setGeneric('.force.eval', function(hdf5Structure, ...) {
+  standardGeneric('.force.eval')
 })
 
-setMethod('force.eval', signature(noisyParameters='noisyParameters'),
-  function(noisyParameters, section) {
-    slots <- slotNames(noisyParameters)
+setMethod('.force.eval', signature(hdf5Structure='hdf5Structure'),
+  function(hdf5Structure, section) {
+    slots <- slotNames(hdf5Structure)
     if (section %in% slots) {
-      if (typeof(slot(noisyParameters, section)) == "closure") {
-        slot(noisyParameters, section) <- slot(noisyParameters, section)()
+      if (typeof(slot(hdf5Structure, section)) == "closure") {
+        slot(hdf5Structure, section) <- slot(hdf5Structure, section)()
       }
-      return(noisyParameters)
+      return(hdf5Structure)
     }
-  })
-
-# forces evaluation of all groups
-setGeneric('force.all',
-  function(object) {
-    standardGeneric('force.all')
-  })
-
-setMethod('force.all', signature(object='noisyParameters'),
-  function(object) {
-    object.new <- object
-    slots <- slotNames(object)
-    for (i in 3:length(slots)) {
-      object.new <- force.eval(object.new, slots[i])
-    }
-    return(object.new)
   })
 
 # shows the groups in the object
@@ -116,18 +100,17 @@ setGeneric('groups',
     standardGeneric('groups')
   })
 
-setMethod('groups', signature(object='noisyParameters'),
+setMethod('groups', signature(object='hdf5Structure'),
   function(object) {
     slots <- slotNames(object)
     return(slots[3:length(slots)])
 })
 
 # custom show function
-setMethod("show", signature(object='noisyParameters'),
+setMethod("show", signature(object='hdf5Structure'),
   function(object) {
     slots <- slotNames(object)[3:length(slotNames(object))]
     file <- paste("file:", object@reader@file)
-    dataset <- paste("dataset:", object@name)
     groups <- paste("groups:", paste(slots, collapse=", "))
-    cat(file, dataset, groups, sep="\n")
+    cat(file, groups, sep="\n")
   })
