@@ -22,3 +22,8 @@ writeHdf5Structure('/path/to/hdf5file/hdf5file.h5', '/', a);
 
 ## Notes
 writeHdf5Structure stores the following structure field data types:
+* `cellstr`
+* `double`
+* `single`
+* `string`
+* `structure`
