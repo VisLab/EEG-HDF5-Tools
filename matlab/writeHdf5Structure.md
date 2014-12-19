@@ -27,5 +27,6 @@ writeHdf5Structure stores the following structure field data types:
 * `single`
 * `string`
 * `structure` 
-- non-scalar structure arrays fields need to be of the same type
-- cell arrays are not supported
+
+non-scalar structure arrays fields need to be of the same type
+cell arrays are not supported
