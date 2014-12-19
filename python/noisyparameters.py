@@ -67,4 +67,4 @@ class NoisyParameters(object):
 
     def __str__(self):
         return "file: {0}\ndataset: {1}\ngroups: {2}".format(
-            self._in_file, self._dataset, ", ".join(self.groups()))
+            self._filename, self._dataset, ", ".join(self.groups()))
