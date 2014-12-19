@@ -17,6 +17,6 @@ hdf5Struct = readHdf5Structure(file)
 
 ## Examples
 
-a = readHdf5Structure('/path/to/hdf5file/noisyParameters.h5');
+a = readHdf5Structure('/path/to/hdf5file/hdf5file.h5');
 
 ## Notes
