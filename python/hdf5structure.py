@@ -16,8 +16,9 @@ class Hdf5Structure(object):
         :type h5file: string
         """
         self._filename = h5file
-        self._h5file = h5py.File(self._filename, 'r')['noisyParameters']
-        self._dataset = self._h5file['name'].value
+        in_file = h5py.File(self._filename, 'r')
+        # start from the root
+        self._h5file = in_file[in_file.keys()[0]]
 
     def groups(self):
         """
