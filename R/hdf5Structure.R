@@ -29,35 +29,37 @@ setMethod(".access", signature(object="HDReader"),
     h5read(object@file, part)
 })
 
+# hdf5Structure
+setClass("hdf5Structure",
+  representation(
+    name="ANY",
+    reader="ANY",
+    data="ANY"
+))
+
 # Constructor for hdf5Structure
-# dynamically generates the class, attributes, and methods
 Hdf5Structure <- function(file) {
   hd <- .HDReader(file)
-  slots <- list()
-  slots[["reader"]] <- "ANY"
-  slots[["name"]] <- "ANY"
+  np <- new("hdf5Structure")
+  slot(np, "reader") <- hd
+  slot(np, "data") <- list()
+  root <- paste(hd@contents[1, ]$group, hd@contents[1, ]$name, sep="")
+                
   for (i in 2:length(hd@contents$name)) {
     row <- hd@contents[i, ]
-    # only grab the groups at the top-level
-    if (toString(row$otype) == "H5I_GROUP" && row$group=="/noisyParameters") {
-      slots[[row$name]] <- "ANY"
+    # only grab from the top-level
+    if (row$group == root) {
+      np@data[row$name] <- "ANY"
     }
   }
   
-  setClass('hdf5Structure', slots=slots)
-  np <- new("hdf5Structure")
-  slot(np, "reader") <- hd
-  slot(np, "name") <- .access(hd, '/noisyParameters/name')
-  
-  names <- slotNames(np)
-  names.length <- length(names)
-  
-  for (i in 3:names.length) {
-    # wrap the attributes in function to feign lazy evaluation
+  list.names <- names(np@data)
+  for (i in 1:length(np@data)) {
+    # wrap the attributes in functions to feign lazy evaluation
     func <- paste("function(eval=T) {
-                    return(", ".access(hd, \"/noisyParameters/", names[i],
+                    return(", ".access(hd,", "\"", root, "/", list.names[i],
                   "\")) }", sep="")
-    slot(np, names[i]) <- eval(parse(text=func))
+    np@data[[i]] <- eval(parse(text=func))
   }
   return(np)
 }
@@ -69,13 +71,14 @@ setGeneric('get.group', function(hdf5Structure, ...) {
 
 setMethod('get.group', signature(hdf5Structure='hdf5Structure'),
   function(hdf5Structure, section) {
-    slots <- slotNames(hdf5Structure)
-    if (section %in% slots) {
-      if (typeof(slot(np, section)) == "closure") {
+    if (section %in% names(hdf5Structure@data)) {
+      if (typeof(hdf5Structure@data[[section]]) == "closure") {
         hdf5Structure <- .force.eval(hdf5Structure, section)
       }
-      return(slot(hdf5Structure, section))  
-      }
+      return(hdf5Structure@data[[section]])  
+    } else {
+      warning(paste("no group with name '", section, "' found", sep=''))
+    }
   })
 
 # forces evaluation of a group
@@ -86,11 +89,13 @@ setGeneric('.force.eval', function(hdf5Structure, ...) {
 setMethod('.force.eval', signature(hdf5Structure='hdf5Structure'),
   function(hdf5Structure, section) {
     slots <- slotNames(hdf5Structure)
-    if (section %in% slots) {
-      if (typeof(slot(hdf5Structure, section)) == "closure") {
-        slot(hdf5Structure, section) <- slot(hdf5Structure, section)()
+    if (section %in% names(hdf5Structure@data)) {
+      if (typeof(hdf5Structure@data[[section]]) == "closure") {
+        hdf5Structure@data[[section]] <- hdf5Structure@data[[section]]()
       }
       return(hdf5Structure)
+    } else {
+      warning(paste("no group with name '", section, "' found", sep=''))  
     }
   })
 
@@ -102,15 +107,13 @@ setGeneric('groups',
 
 setMethod('groups', signature(object='hdf5Structure'),
   function(object) {
-    slots <- slotNames(object)
-    return(slots[3:length(slots)])
+    return(names(object@data))
 })
 
 # custom show function
 setMethod("show", signature(object='hdf5Structure'),
   function(object) {
-    slots <- slotNames(object)[3:length(slotNames(object))]
     file <- paste("file:", object@reader@file)
-    groups <- paste("groups:", paste(slots, collapse=", "))
+    groups <- paste("groups:", paste(groups(object), collapse=", "))
     cat(file, groups, sep="\n")
   })
