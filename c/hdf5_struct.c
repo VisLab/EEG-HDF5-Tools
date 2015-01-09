@@ -92,14 +92,14 @@ static void free_entry(hdf5_entry_t entry) {
 static void free_group(hdf5_entry_t entry) {
     int i;
     for (i = 0; i < entry->num_entries; i++) {
-        if (entry->entries[i]->evaluated) {
-            free_entry(entry->entries[i]);
-            free(entry->entries[i]);
-        }
+        free_entry(entry->entries[i]);
+        free(entry->entries[i]);
     }
 
-    if ((H5Gclose(entry->id)) < 0) {
-        perror("failed to close group");
+    if (entry->evaluated) {
+        if ((H5Gclose(entry->id)) < 0) {
+            perror("failed to close group");
+        }
     }
     free(entry->entries);
 }
@@ -305,8 +305,6 @@ static void set_group(hdf5_entry_t entry) {
     int i;
     for (i = 0; i < entry->num_entries; i++) {
         entry->entries[i] = get_entry_info(entry->id, i);
-
-        // fill_entry_data(entry->id, entry->entries[i]);
     }
 }
 
