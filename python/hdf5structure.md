@@ -50,5 +50,5 @@ you can then extract the needed value
     >>> version = np.get_lazy_group('version')
     >>> version.keys()
     [u'Resampling', u'Interpolation', u'LineNoise', u'Reference', u'HighPass']
-    >>> version['Resamlping'].value
+    >>> version['Resampling'].value
     'v0.21'
