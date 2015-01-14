@@ -6,13 +6,13 @@
 
 #define MAX_LEN       1024
 
-// shorter access to hdf5_entry_t.data->*
+// shorter access to hdf5_entry_t->data.*
 #define FLOAT_DATA(e) ((e->data.float_data))
 #define INT_DATA(e)   ((e->data.int_data))
 #define STR_DATA(e)   ((e->data.string_data))
-#define GEN_DATA(e)   ((e->data.gen_data))
+#define LOC_DATA(e)   ((e->data.locations))
 
-// access to hdf5_entry_t->dims--mainly to prevent indexing errors
+// access to hdf5_entry_t->dims[...]--mainly to prevent indexing errors
 #define X_DIM(e)      ((e->dims[0]))
 #define Y_DIM(e)      ((e->dims[1]))
 
@@ -24,7 +24,7 @@ union data_buffer {
     int   **int_data;
     float **float_data;
     char   *string_data;
-    void *gen_data;
+    struct channel_loc *locations;
 };
 
 /*
@@ -55,6 +55,21 @@ typedef struct hdf5_struct {
     hsize_t num_entries;         // the number of entries
     hdf5_entry_t *entries;       // children entries
 } *hdf5_struct_t;
+
+struct channel_loc {
+    char  *labels;
+    char  *type;
+    double theta;
+    double radius;
+    double X;
+    double Y;
+    double Z;
+    double sph_theta;
+    double sph_phi;
+    double sph_radius;
+    double urchan;
+    char  *ref;
+};
 
 /*
  * Creates a new hdf5_struct_t from a file.
