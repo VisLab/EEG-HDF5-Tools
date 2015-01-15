@@ -36,7 +36,8 @@ hdf5_struct_t new_hdf5_struct(const char *path) {
     }
 
     H5Gget_objname_by_idx(hdf5->in_file, (hsize_t) 0, hdf5->root_name, MAX_LEN);
-    if ((hdf5->root = H5Gopen1(hdf5->in_file, hdf5->root_name)) < 0) {
+    if ((hdf5->root = H5Gopen(hdf5->in_file, hdf5->root_name,
+                              H5P_DEFAULT)) < 0) {
         perror("failed to open root");
         free(hdf5);
         return NULL;
@@ -139,10 +140,47 @@ hdf5_entry_t get_subgroup(const hdf5_entry_t entry, const char *path) {
  * \param hdf5 the hdf5_struct_t object to print information about
  */
 void print_hdf5_struct(const hdf5_struct_t hdf5) {
-    printf("HDF5\n====\n");
+    int i;
     printf("id: %d\n", hdf5->in_file);
     printf("name: %s\n", hdf5->root_name);
     printf("root_id: %d\n", hdf5->root);
+    printf("groups: ");
+    for (i = 0; i < hdf5->num_entries; i++) {
+        printf("%s ", hdf5->entries[i]->name);
+    }
+}
+
+/*
+ * Prints information about a hdf5_entry_t object.
+ * \param entry the hdf5_entry object to print information about
+ */
+void print_hdf5_entry(const hdf5_entry_t entry) {
+    printf("name: %s\n", entry->name);
+    printf("dims: %llu x %llu\n", X_DIM(entry), Y_DIM(entry));
+    printf("evaluated? %s\n", entry->evaluated ? "true" : "false");
+    switch (entry->type) {
+        case H5G_GROUP:
+            printf("num entries: %llu\n", entry->num_entries);
+            printf("contains: ");
+            int i;
+            for (i = 0; i < entry->num_entries; i++) {
+                printf("%s ", entry->entries[i]->name);
+            }
+            printf("\n");
+            break;
+        case H5G_DATASET:
+            print_data(entry);
+            break;
+        case H5G_TYPE:
+            printf("%s\n", "Named datatype");
+            break;
+        case H5G_LINK:
+            printf("%s\n", "Link");
+            break;
+        case H5G_UDLINK:
+            printf("%s\n", "User-defined Link");
+            break;
+    }
 }
 
 /*******************************************************************************
@@ -280,7 +318,10 @@ static hdf5_entry_t get_entry_info(const hid_t root, int index) {
 static void fill_entry_data(const hid_t root, const hdf5_entry_t entry) {
     switch (entry->type) {
         case H5G_GROUP:
-            entry->id = H5Gopen1(root, entry->name);
+            if ((entry->id = H5Gopen(root, entry->name, H5P_DEFAULT)) < 0) {
+                perror("failed to open group");
+                return;
+            }
             set_group(entry);
             break;
         case H5G_DATASET:
@@ -343,10 +384,21 @@ static void read_dataset(const hid_t root, const hdf5_entry_t entry) {
     hsize_t n_fields;
     hsize_t n_records;
 
+    if ((entry->id = H5Dopen(root, entry->name, H5P_DEFAULT)) < 0) {
+        perror("failed to open dataset");
+        return;
+    }
+    if ((H5LTget_dataset_info(root, entry->name, entry->dims, NULL,
+                              &size)) < 0) {
+        perror("failed to get dataset info");
+        return;
+    }
+    if ((type = H5Dget_type(entry->id)) < 0) {
+        perror("failed to get dataset type");
+        return;
+    }
+
     entry->evaluated = true;
-    entry->id = H5Dopen1(root, entry->name);
-    H5LTget_dataset_info(root, entry->name, entry->dims, NULL, &size);
-    type = H5Dget_type(entry->id);
     entry->size  = size;
     entry->class = H5Tget_class(type);
 
@@ -421,52 +473,17 @@ static void read_dataset(const hid_t root, const hdf5_entry_t entry) {
 }
 
 /*
- * Prints information about a hdf5_entry_t object.
- * \param entry the hdf5_entry object to print information about
- */
-void print_hdf5_entry(const hdf5_entry_t entry) {
-    printf("\tHDF5 ENTRY\n\t==========\n");
-    printf("\tname: %s\n", entry->name);
-    printf("\tdims: %llu x %llu\n", X_DIM(entry), Y_DIM(entry));
-    printf("\tevaluated? %s\n", entry->evaluated ? "true" : "false");
-    print_data(entry);
-    switch (entry->type) {
-        case H5G_GROUP:
-            printf("\t%s\n", "Group");
-            printf("\tNum Entries: %llu\n", entry->num_entries);
-            printf("SUB");
-            int i;
-            for (i = 0; i < entry->num_entries; i++) {
-                print_hdf5_entry(entry->entries[i]);
-            }
-            break;
-        case H5G_DATASET:
-            printf("\t%s\n", "Dataset");
-            break;
-        case H5G_TYPE:
-            printf("\t%s\n", "Named datatype");
-            break;
-        case H5G_LINK:
-            printf("\t%s\n", "Link");
-            break;
-        case H5G_UDLINK:
-            printf("\t%s\n", "User-defined Link");
-            break;
-    }
-}
-
-/*
  * Prints the data in hdf5_entry-t.data.*
  * \param entry the hdf5_entry_t object to print the data from
  */
 static void print_data(const hdf5_entry_t entry) {
     int i, j;
-    printf("\t[ ");
+    printf("[ ");
     switch (entry->class) {
         case H5T_FLOAT:
             for (i = 0; i < X_DIM(entry); i++) {
                 for (j = 0; j < Y_DIM(entry); j++) {
-                    printf("%.0f ", FLOAT_DATA(entry)[i][j]);
+                    printf("%.2f ", FLOAT_DATA(entry)[i][j]);
                 }
             }
             break;
