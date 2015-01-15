@@ -52,7 +52,7 @@ hdf5_struct_t new_hdf5_struct(const char *path) {
  * Frees the memory associated with a hdf5_struct_t object.
  * \param hdf5 the hdf5_struct_t object to free.
  */
-void hdf5_struct_free(const hdf5_struct_t hdf5) {
+void free_hdf5_struct(const hdf5_struct_t hdf5) {
     int i;
     for (i = 0; i < hdf5->num_entries; i++) {
         free_entry(hdf5->entries[i]);
