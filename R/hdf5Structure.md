@@ -15,10 +15,6 @@
 ###hdf5Structure
 `hdf5Structure` is the only class exposed by EEG. Its structure is dynamically
 created according to the structure of the HDF5 file that was used to create it.
-However the following attributes are always available:
-
-  * `name`: the name of the dataset
-  * `reader`: the structure of the HDF5 file
 
 `hdf5Structure` objects shouldn't be created with R's built-in `new` method,
 instead use the `Hdf5Structure` function.
@@ -39,8 +35,6 @@ The only parameter is a path to a HDF5 file.
 fields correspond to the top-level groups of the HDF5 file. In the above
 example, `np` was defined according to the file that was passed to
 `Hdf5Structure`.
-
-**An important note:** `reader` and `name` are eagerly evaluated upon creation.
 
 ###groups(hdf5Structure)
 ####shows the groups in the `hdf5Structure` object.
