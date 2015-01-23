@@ -22,9 +22,8 @@ static hdf5_entry_t get_entry_info(const hid_t, int);
  * \return a pointer to a hdf5_struct_t object.
  */
 hdf5_struct_t new_hdf5_struct(const char *path) {
-    hdf5_struct_t hdf5 = (hdf5_struct_t) malloc(sizeof(struct hdf5_struct));
-
-    if (hdf5 == NULL) {
+    hdf5_struct_t hdf5;
+    if ((hdf5 = (hdf5_struct_t) malloc(sizeof(struct hdf5_struct))) == NULL) {
         perror("malloc failed in new_hdf5_struct():hdf5");
         return NULL;
     }
@@ -35,9 +34,17 @@ hdf5_struct_t new_hdf5_struct(const char *path) {
         return NULL;
     }
 
-    H5Gget_objname_by_idx(hdf5->in_file, (hsize_t) 0, hdf5->root_name, MAX_LEN);
-    if ((hdf5->root = H5Gopen(hdf5->in_file, hdf5->root_name,
-                              H5P_DEFAULT)) < 0) {
+    if ((hdf5->root = (hdf5_entry_t)
+                      malloc(sizeof(struct hdf5_entry))) == NULL) {
+        perror("malloc failed in new_hdf5_struct():root");
+        free(hdf5);
+        return NULL;
+    }
+
+    H5Gget_objname_by_idx(hdf5->in_file, (hsize_t) 0,
+                          hdf5->root->name, MAX_LEN);
+    if ((hdf5->root->id = H5Gopen(hdf5->in_file, hdf5->root->name,
+                                  H5P_DEFAULT)) < 0) {
         perror("failed to open root");
         free(hdf5);
         return NULL;
@@ -55,19 +62,20 @@ hdf5_struct_t new_hdf5_struct(const char *path) {
  */
 void free_hdf5_struct(const hdf5_struct_t hdf5) {
     int i;
-    for (i = 0; i < hdf5->num_entries; i++) {
-        free_entry(hdf5->entries[i]);
-        free(hdf5->entries[i]);
+    for (i = 0; i < hdf5->root->num_entries; i++) {
+        free_entry(hdf5->root->entries[i]);
+        free(hdf5->root->entries[i]);
     }
 
-    if ((H5Gclose(hdf5->root)) < 0) {
+    if ((H5Gclose(hdf5->root->id)) < 0) {
         perror("failed to close root");
     }
     if ((H5Fclose(hdf5->in_file)) < 0) {
         perror("failed to close file");
     }
 
-    free(hdf5->entries);
+    free(hdf5->root->entries);
+    free(hdf5->root);
     free(hdf5);
 }
 
@@ -77,17 +85,17 @@ void free_hdf5_struct(const hdf5_struct_t hdf5) {
  * \return a pointer to an array of chars containing the names
  */
 char **groups(const hdf5_struct_t hdf5) {
-    char **buf = (char **) malloc(sizeof(char *) * hdf5->num_entries);
+    char **buf = (char **) malloc(sizeof(char *) * hdf5->root->num_entries);
     if (buf == NULL) {
         perror("malloc failed in groups():buf");
     }
     int i;
-    for (i = 0; i < hdf5->num_entries; i++) {
+    for (i = 0; i < hdf5->root->num_entries; i++) {
         buf[i] = (char *) malloc(sizeof(char) * MAX_LEN);
         if (buf[i] == NULL) {
             perror("malloc failed in groups():buf[i]");
         }
-        strcpy(buf[i], hdf5->entries[i]->name);
+        strcpy(buf[i], hdf5->root->entries[i]->name);
     }
 
     return buf;
@@ -100,14 +108,9 @@ char **groups(const hdf5_struct_t hdf5) {
  * \return an hdf5_entry_t object or NULL if no object found
  */
 hdf5_entry_t get_group(const hdf5_struct_t hdf5, const char *path) {
-    int          i;
-    hdf5_entry_t entry = NULL;
-    for (i = 0; i < hdf5->num_entries; i++) {
-        if (strcmp(hdf5->entries[i]->name, path) == 0) {
-            entry = hdf5->entries[i];
-        }
-    }
+    hdf5_entry_t entry = get_subgroup(hdf5->root, path);
 
+    int i;
     for (i = 0; i < entry->num_entries; i++) {
         if (!entry->entries[i]->evaluated) {
             fill_entry_data(entry->id, entry->entries[i]);
@@ -124,8 +127,11 @@ hdf5_entry_t get_group(const hdf5_struct_t hdf5, const char *path) {
  * \return an hdf5_entry_t object or NULL if no object found
  */
 hdf5_entry_t get_subgroup(const hdf5_entry_t entry, const char *path) {
+    if (!IS_GROUP(entry)) {
+        return NULL;
+    }
     int          i;
-    hdf5_entry_t sub_entry = NULL;
+    hdf5_entry_t sub_entry;
     for (i = 0; i < entry->num_entries; i++) {
         if (strcmp(entry->entries[i]->name, path) == 0) {
             sub_entry = entry->entries[i];
@@ -136,18 +142,44 @@ hdf5_entry_t get_subgroup(const hdf5_entry_t entry, const char *path) {
 }
 
 /*
+ * Returns the data associated with a hdf5_entry_t object.
+ * \param entry the hdf5_entry_t object to access
+ * \return the data associated with a hdf5_entry_t object as a void *
+ */
+void *get_data(const hdf5_entry_t entry) {
+    if (IS_GROUP(entry)) {
+        return NULL;
+    }
+    switch (entry->class) {
+        case H5T_FLOAT:
+            return FLOAT_DATA(entry);
+            break;
+        case H5T_INTEGER:
+            return INT_DATA(entry);
+            break;
+        case H5T_STRING:
+            return STR_DATA(entry);
+            break;
+        case H5T_COMPOUND:
+            return GEN_DATA(entry);
+            break;
+        default:
+            return NULL;
+    }
+}
+
+/*
  * Prints information about a hdf5_struct_t object.
  * \param hdf5 the hdf5_struct_t object to print information about
  */
 void print_hdf5_struct(const hdf5_struct_t hdf5) {
     int i;
-    printf("id: %d\n", hdf5->in_file);
-    printf("name: %s\n", hdf5->root_name);
-    printf("root_id: %d\n", hdf5->root);
+    printf("name: %s\n", hdf5->root->name);
     printf("groups: ");
-    for (i = 0; i < hdf5->num_entries; i++) {
-        printf("%s ", hdf5->entries[i]->name);
+    for (i = 0; i < hdf5->root->num_entries; i++) {
+        printf("%s ", hdf5->root->entries[i]->name);
     }
+    printf("\n");
 }
 
 /*
@@ -227,7 +259,6 @@ static void free_group(const hdf5_entry_t entry) {
  */
 static void free_dataset(const hdf5_entry_t entry) {
     if (entry->evaluated) {
-        int i;
         if ((H5Dclose(entry->id)) < 0) {
             perror("failed to close dataset");
         }
@@ -244,12 +275,7 @@ static void free_dataset(const hdf5_entry_t entry) {
                 free(STR_DATA(entry));
                 break;
             case H5T_COMPOUND:
-                for (i = 0; i < X_DIM(entry); i++) {
-                    free(LOC_DATA(entry)[i].labels);
-                    free(LOC_DATA(entry)[i].type);
-                    free(LOC_DATA(entry)[i].ref);
-                }
-                free(LOC_DATA(entry));
+                free(GEN_DATA(entry));
                 break;
             default:
                 break;
@@ -264,27 +290,28 @@ static void free_dataset(const hdf5_entry_t entry) {
 static void hdf5_struct_get_entries(const hdf5_struct_t hdf5) {
     // get the entries from root
     H5G_info_t g_info;
-    if ((H5Gget_info(hdf5->root, &g_info) < 0)) {
+    if ((H5Gget_info(hdf5->root->id, &g_info) < 0)) {
         perror("H5Gget_info failed");
         return;
     }
 
-    hdf5->num_entries = g_info.nlinks;
-    hdf5->entries     = (hdf5_entry_t *)
-                        malloc(sizeof(hdf5_entry_t) * hdf5->num_entries);
-    if (hdf5->entries == NULL) {
+    hdf5->root->num_entries = g_info.nlinks;
+    hdf5->root->entries     = (hdf5_entry_t *) malloc(sizeof(hdf5_entry_t) *
+                                                      hdf5->root->num_entries);
+    if (hdf5->root->entries == NULL) {
         perror("malloc failed in new_hdf5_struct():entries");
         free(hdf5);
         return;
     }
 
     int i;
-    for (i = 0; i < hdf5->num_entries; i++) {
-        if ((hdf5->entries[i] = get_entry_info(hdf5->root, i)) == NULL) {
+    for (i = 0; i < hdf5->root->num_entries; i++) {
+        if ((hdf5->root->entries[i] =
+                 get_entry_info(hdf5->root->id, i)) == NULL) {
             perror("failed to get entry");
             return;
         }
-        fill_entry_data(hdf5->root, hdf5->entries[i]);
+        fill_entry_data(hdf5->root->id, hdf5->root->entries[i]);
     }
 }
 
@@ -295,8 +322,8 @@ static void hdf5_struct_get_entries(const hdf5_struct_t hdf5) {
  * \return an hdf5_entry_t with filled information
  */
 static hdf5_entry_t get_entry_info(const hid_t root, int index) {
-    hdf5_entry_t entry = (hdf5_entry_t) malloc(sizeof(struct hdf5_entry));
-    if (entry == NULL) {
+    hdf5_entry_t entry;
+    if ((entry = (hdf5_entry_t) malloc(sizeof(struct hdf5_entry))) == NULL) {
         perror("malloc failed in get_entry():entry");
         return NULL;
     }
@@ -411,7 +438,11 @@ static void read_dataset(const hid_t root, const hdf5_entry_t entry) {
             for (i = 1; i < X_DIM(entry); i++) {
                 FLOAT_DATA(entry)[i] = FLOAT_DATA(entry)[0] + i * Y_DIM(entry);
             }
-            H5LTread_dataset_float(root, entry->name, FLOAT_DATA(entry)[0]);
+            if ((H5LTread_dataset_float(root, entry->name,
+                                        FLOAT_DATA(entry)[0])) < 0) {
+                perror("failed to read dataset");
+                return;
+            }
             break;
         case H5T_INTEGER:
             INT_DATA(entry)    = (int **) malloc(sizeof(int *) * X_DIM(entry));
@@ -420,12 +451,19 @@ static void read_dataset(const hid_t root, const hdf5_entry_t entry) {
             for (i = 1; i < X_DIM(entry); i++) {
                 INT_DATA(entry)[i] = INT_DATA(entry)[0] + i * Y_DIM(entry);
             }
-            H5LTread_dataset_int(root, entry->name, INT_DATA(entry)[0]);
+            if ((H5LTread_dataset_int(root, entry->name,
+                                      INT_DATA(entry)[0])) < 0) {
+                perror("failed to read dataset");
+                return;
+            }
             break;
         case H5T_STRING:
             buf = (char *) calloc(size + 1, sizeof(char));
             STR_DATA(entry) = calloc(1, size + 1);
-            H5LTread_dataset_string(root, entry->name, buf);
+            if ((H5LTread_dataset_string(root, entry->name, buf)) < 0) {
+                perror("failed to read dataset");
+                return;
+            }
             strcpy(STR_DATA(entry), buf);
             free(buf);
             break;
@@ -436,16 +474,16 @@ static void read_dataset(const hid_t root, const hdf5_entry_t entry) {
             printf("opaque: %s\n", entry->name);
             break;
         case H5T_COMPOUND:
-            // assumes that the *only* compound data type is channel locations
             H5TBget_table_info(root, entry->name, &n_fields, &n_records);
             sizes   = (size_t *) malloc(sizeof(size_t) * n_fields);
             offsets = (size_t *) malloc(sizeof(size_t) * n_fields);
             H5TBget_field_info(root, entry->name, NULL, sizes, offsets, &size);
 
-            LOC_DATA(entry) = (struct channel_loc *)
-                              malloc(sizeof(struct channel_loc) * n_records);
-            H5TBread_records(root, entry->name, 0, n_records, size,
-                             offsets, sizes, LOC_DATA(entry));
+            GEN_DATA(entry) = malloc(size * n_records);
+            if ((H5TBread_table(root, entry->name, size, offsets,
+                                sizes, GEN_DATA(entry))) < 0) {
+                perror("failed to read dataset");
+            }
             free(sizes);
             free(offsets);
             break;
@@ -498,16 +536,7 @@ static void print_data(const hdf5_entry_t entry) {
             printf("%s ", STR_DATA(entry));
             break;
         case H5T_COMPOUND:
-            for (i = 0; i < X_DIM(entry); i++) {
-                printf("%-5s%-5s%12f%12f%12f%12f%12f%12f%12f%12f%12f%12s\n\t",
-                       LOC_DATA(entry)[i].labels, LOC_DATA(entry)[i].type,
-                       LOC_DATA(entry)[i].theta, LOC_DATA(entry)[i].radius,
-                       LOC_DATA(entry)[i].X, LOC_DATA(entry)[i].Y,
-                       LOC_DATA(entry)[i].Z, LOC_DATA(entry)[i].sph_theta,
-                       LOC_DATA(entry)[i].sph_phi,
-                       LOC_DATA(entry)[i].sph_radius, LOC_DATA(entry)[i].urchan,
-                       LOC_DATA(entry)[i].ref);
-            }
+            printf("compound data type ");
             break;
         default:
             printf("TODO ");

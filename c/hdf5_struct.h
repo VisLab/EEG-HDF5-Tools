@@ -4,17 +4,22 @@
 #include <stdbool.h>
 #include "hdf5.h"
 
-#define MAX_LEN       1024
+#define MAX_LEN        1024
 
 // shorter access to hdf5_entry_t->data.*
-#define FLOAT_DATA(e) ((e->data.float_data))
-#define INT_DATA(e)   ((e->data.int_data))
-#define STR_DATA(e)   ((e->data.string_data))
-#define LOC_DATA(e)   ((e->data.locations))
+#define FLOAT_DATA(e)  ((e->data.float_data))
+#define INT_DATA(e)    ((e->data.int_data))
+#define STR_DATA(e)    ((e->data.string_data))
+#define GEN_DATA(e)    ((e->data.gen_data))
 
 // access to hdf5_entry_t->dims[...]--mainly to prevent indexing errors
-#define X_DIM(e)      ((e->dims[0]))
-#define Y_DIM(e)      ((e->dims[1]))
+#define X_DIM(e)       ((e->dims[0]))
+#define Y_DIM(e)       ((e->dims[1]))
+
+#define IS_GROUP(e)    ((e->type == H5G_GROUP))
+#define ENTRY_AT(e, i) ((e->entries[i]))
+#define NUM_ENTRY(e)   ((e->num_entries))
+
 
 /*
  * Buffer for a dataset. To lower memory use, the different types are stored in
@@ -24,7 +29,7 @@ union data_buffer {
     int   **int_data;
     float **float_data;
     char   *string_data;
-    struct channel_loc *locations;
+    void   *gen_data;
 };
 
 /*
@@ -49,27 +54,9 @@ typedef struct hdf5_entry {
  * Holds information about the overall HDF5 file
  */
 typedef struct hdf5_struct {
-    hid_t   in_file;             // the id of the hdf5 file
-    hid_t   root;                // the id of the root group
-    char    root_name[MAX_LEN];  // the name of the root group
-    hsize_t num_entries;         // the number of entries
-    hdf5_entry_t *entries;       // children entries
+    hid_t in_file;      // the id of the hdf5 file
+    hdf5_entry_t root;  // the root entry
 } *hdf5_struct_t;
-
-struct channel_loc {
-    char  *labels;
-    char  *type;
-    double theta;
-    double radius;
-    double X;
-    double Y;
-    double Z;
-    double sph_theta;
-    double sph_phi;
-    double sph_radius;
-    double urchan;
-    char  *ref;
-};
 
 /*
  * Creates a new hdf5_struct_t from a file.
@@ -100,6 +87,11 @@ hdf5_entry_t get_subgroup(const hdf5_entry_t entry, const char *path);
  * Prints a hdf5_struct_t
  */
 void print_hdf5_struct(const hdf5_struct_t hdf5);
+
+/*
+ * Returns the data associated with a hdf5_entry_t object
+ */
+void *get_data(const hdf5_entry_t entry);
 
 /*
  * Prints a hdf5_entry_t
