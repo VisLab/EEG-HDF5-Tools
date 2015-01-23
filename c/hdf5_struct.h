@@ -7,7 +7,7 @@
 #define MAX_LEN        1024
 
 // shorter access to hdf5_entry_t->data.*
-#define FLOAT_DATA(e)  ((e->data.float_data))
+#define FLOAT_DATA(e)  ((e->data.double_data))
 #define INT_DATA(e)    ((e->data.int_data))
 #define STR_DATA(e)    ((e->data.string_data))
 #define GEN_DATA(e)    ((e->data.gen_data))
@@ -26,10 +26,10 @@
  * a union.
  */
 union data_buffer {
-    int   **int_data;
-    float **float_data;
-    char   *string_data;
-    void   *gen_data;
+    int    **int_data;
+    double **double_data;
+    char    *string_data;
+    void    *gen_data;
 };
 
 /*

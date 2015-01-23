@@ -432,14 +432,14 @@ static void read_dataset(const hid_t root, const hdf5_entry_t entry) {
     switch (entry->class) {
         case H5T_FLOAT:
             FLOAT_DATA(entry) =
-                (float **) malloc(sizeof(float *) * X_DIM(entry));
+                (double **) malloc(sizeof(double *) * X_DIM(entry));
             FLOAT_DATA(entry)[0] =
-                (float *) malloc(X_DIM(entry) * Y_DIM(entry) * sizeof(float));
+                (double *) malloc(X_DIM(entry) * Y_DIM(entry) * sizeof(double));
             for (i = 1; i < X_DIM(entry); i++) {
                 FLOAT_DATA(entry)[i] = FLOAT_DATA(entry)[0] + i * Y_DIM(entry);
             }
-            if ((H5LTread_dataset_float(root, entry->name,
-                                        FLOAT_DATA(entry)[0])) < 0) {
+            if ((H5LTread_dataset_double(root, entry->name,
+                                         FLOAT_DATA(entry)[0])) < 0) {
                 perror("failed to read dataset");
                 return;
             }
