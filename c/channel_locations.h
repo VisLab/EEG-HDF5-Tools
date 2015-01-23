@@ -17,4 +17,15 @@ struct channel_locations {
     char  *ref;
 };
 
+/*
+ * prints the fields of a struct channel_locations
+ * \param chan the struct channel_locations to print
+ */
+void print_channel_locations(struct channel_locations chan) {
+    printf("%-5s%-5s%12f%12f%12f%12f%12f%12f%12f%12f%12f%12s\n",
+           chan.labels, chan.type, chan.theta, chan.radius, chan.X, chan.Y,
+           chan.Z, chan.sph_theta, chan.sph_phi, chan.sph_radius, chan.urchan,
+           chan.ref);
+}
+
 #endif
