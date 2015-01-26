@@ -39,8 +39,8 @@ typedef struct hdf5_entry {
     int   type;                  // the type of the entry (group or dataset)
     char  name[MAX_LEN];         // the name of the entry
     hid_t id;                    // the id of the entry
-    /* specific to datasets */
     bool evaluated;              // whether the dataset has been read
+    /* specific to datasets */
     H5T_class_t class;           // type of the dataset
     hsize_t     dims[2];         // dimensions of the dataset
     int size;                    // size of the dataset in bytes

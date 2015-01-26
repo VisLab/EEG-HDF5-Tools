@@ -41,10 +41,8 @@ hdf5_struct_t new_hdf5_struct(const char *path) {
         return NULL;
     }
 
-    H5Gget_objname_by_idx(hdf5->in_file, (hsize_t) 0,
-                          hdf5->root->name, MAX_LEN);
-    if ((hdf5->root->id = H5Gopen(hdf5->in_file, hdf5->root->name,
-                                  H5P_DEFAULT)) < 0) {
+    strcpy(hdf5->root->name, "/");
+    if ((hdf5->root->id = H5Gopen(hdf5->in_file, "/", H5P_DEFAULT)) < 0) {
         perror("failed to open root");
         free(hdf5);
         return NULL;
@@ -91,7 +89,7 @@ char **groups(const hdf5_struct_t hdf5) {
     }
     int i;
     for (i = 0; i < hdf5->root->num_entries; i++) {
-        buf[i] = (char *) malloc(sizeof(char) * MAX_LEN);
+        buf[i] = (char *) calloc(MAX_LEN, sizeof(char));
         if (buf[i] == NULL) {
             perror("malloc failed in groups():buf[i]");
         }
@@ -109,14 +107,6 @@ char **groups(const hdf5_struct_t hdf5) {
  */
 hdf5_entry_t get_group(const hdf5_struct_t hdf5, const char *path) {
     hdf5_entry_t entry = get_subgroup(hdf5->root, path);
-
-    int i;
-    for (i = 0; i < entry->num_entries; i++) {
-        if (!entry->entries[i]->evaluated) {
-            fill_entry_data(entry->id, entry->entries[i]);
-        }
-    }
-
     return entry;
 }
 
@@ -134,8 +124,18 @@ hdf5_entry_t get_subgroup(const hdf5_entry_t entry, const char *path) {
     hdf5_entry_t sub_entry;
     for (i = 0; i < entry->num_entries; i++) {
         if (strcmp(entry->entries[i]->name, path) == 0) {
-            sub_entry = entry->entries[i];
+            if ((sub_entry = entry->entries[i]) == NULL) {
+                return NULL;
+            }
+            if (!sub_entry->evaluated) {
+                fill_entry_data(entry->id, sub_entry);
+            }
         }
+    }
+
+    // TODO remove for improved laziness?
+    for (i = 0; i < sub_entry->num_entries; i++) {
+        fill_entry_data(sub_entry->id, sub_entry->entries[i]);
     }
 
     return sub_entry;
@@ -224,13 +224,15 @@ void print_hdf5_entry(const hdf5_entry_t entry) {
  * \param entry the hdf5_entry_t object to free.
  */
 static void free_entry(const hdf5_entry_t entry) {
-    switch (entry->type) {
-        case H5G_GROUP:
-            free_group(entry);
-            break;
-        case H5G_DATASET:
-            free_dataset(entry);
-            break;
+    if (entry->evaluated) {
+        switch (entry->type) {
+            case H5G_GROUP:
+                free_group(entry);
+                break;
+            case H5G_DATASET:
+                free_dataset(entry);
+                break;
+        }
     }
 }
 
@@ -323,7 +325,7 @@ static void hdf5_struct_get_entries(const hdf5_struct_t hdf5) {
  */
 static hdf5_entry_t get_entry_info(const hid_t root, int index) {
     hdf5_entry_t entry;
-    if ((entry = (hdf5_entry_t) malloc(sizeof(struct hdf5_entry))) == NULL) {
+    if ((entry = (hdf5_entry_t) calloc(1, sizeof(struct hdf5_entry))) == NULL) {
         perror("malloc failed in get_entry():entry");
         return NULL;
     }
@@ -488,16 +490,16 @@ static void read_dataset(const hid_t root, const hdf5_entry_t entry) {
             free(offsets);
             break;
         case H5T_REFERENCE:
-            printf("reference: %s\n", entry->name);
+            printf("TODO reference: %s\n", entry->name);
             break;
         case H5T_ENUM:
-            printf("enum: %s\n", entry->name);
+            printf("TODO enum: %s\n", entry->name);
             break;
         case H5T_VLEN:
-            printf("vlen: %s\n", entry->name);
+            printf("TODO vlen: %s\n", entry->name);
             break;
         case H5T_ARRAY:
-            printf("array: %s\n", entry->name);
+            printf("TODO array: %s\n", entry->name);
             break;
         case H5T_NO_CLASS:
             printf("Not a valid class: %s\n. No data read", entry->name);
