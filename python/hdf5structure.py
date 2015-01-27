@@ -16,9 +16,7 @@ class Hdf5Structure(object):
         :type h5file: string
         """
         self._filename = h5file
-        in_file = h5py.File(self._filename, 'r')
-        # start from the root
-        self._h5file = in_file[in_file.keys()[0]]
+        self._h5file = h5py.File(self._filename, 'r')
 
     def groups(self):
         """
@@ -39,8 +37,7 @@ class Hdf5Structure(object):
         except KeyError:
             print "no group with name '{0}' found".format(group)
             return {}
-        return {key: self._h5file[group][key] for key in
-                self._h5file[group].keys()}
+        return self._h5file[group]
 
     def get_group(self, group):
         """
@@ -58,10 +55,10 @@ class Hdf5Structure(object):
         :type values: dictionary
         """
         forced = {}
-        for key, value in values.iteritems():
-            if type(value) == h5py.Dataset:
-                forced[key] = value.value
-            else:
+        if type(values) == h5py.Dataset:
+            return values.value
+        else:
+            for key, value in values.iteritems():
                 forced[key] = self._force(value)
 
         return forced
