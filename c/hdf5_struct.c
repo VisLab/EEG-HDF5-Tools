@@ -135,7 +135,9 @@ hdf5_entry_t get_subgroup(const hdf5_entry_t entry, const char *path) {
 
     // TODO remove for improved laziness?
     for (i = 0; i < sub_entry->num_entries; i++) {
-        fill_entry_data(sub_entry->id, sub_entry->entries[i]);
+        if (!sub_entry->entries[i]->evaluated) {
+            fill_entry_data(sub_entry->id, sub_entry->entries[i]);
+        }
     }
 
     return sub_entry;
@@ -188,8 +190,7 @@ void print_hdf5_struct(const hdf5_struct_t hdf5) {
  */
 void print_hdf5_entry(const hdf5_entry_t entry) {
     printf("name: %s\n", entry->name);
-    printf("dims: %llu x %llu\n", X_DIM(entry), Y_DIM(entry));
-    printf("evaluated? %s\n", entry->evaluated ? "true" : "false");
+    printf("evaluated: %s\n", entry->evaluated ? "true" : "false");
     switch (entry->type) {
         case H5G_GROUP:
             printf("num entries: %llu\n", entry->num_entries);
@@ -201,7 +202,13 @@ void print_hdf5_entry(const hdf5_entry_t entry) {
             printf("\n");
             break;
         case H5G_DATASET:
-            print_data(entry);
+            // conservative definition of 'large' data set
+            printf("dims: %llu x %llu\n", X_DIM(entry), Y_DIM(entry));
+            if (X_DIM(entry) * Y_DIM(entry) <= 100) {
+                print_data(entry);
+            } else {
+                printf("[ large dataset ]\n");
+            }
             break;
         case H5G_TYPE:
             printf("%s\n", "Named datatype");
@@ -247,10 +254,8 @@ static void free_group(const hdf5_entry_t entry) {
         free(entry->entries[i]);
     }
 
-    if (entry->evaluated) {
-        if ((H5Gclose(entry->id)) < 0) {
-            perror("failed to close group");
-        }
+    if ((H5Gclose(entry->id)) < 0) {
+        perror("failed to close group");
     }
     free(entry->entries);
 }
@@ -260,28 +265,26 @@ static void free_group(const hdf5_entry_t entry) {
  * \param entry the dataset to free.
  */
 static void free_dataset(const hdf5_entry_t entry) {
-    if (entry->evaluated) {
-        if ((H5Dclose(entry->id)) < 0) {
-            perror("failed to close dataset");
-        }
-        switch (entry->class) {
-            case H5T_INTEGER:
-                free(INT_DATA(entry)[0]);
-                free(INT_DATA(entry));
-                break;
-            case H5T_FLOAT:
-                free(FLOAT_DATA(entry)[0]);
-                free(FLOAT_DATA(entry));
-                break;
-            case H5T_STRING:
-                free(STR_DATA(entry));
-                break;
-            case H5T_COMPOUND:
-                free(GEN_DATA(entry));
-                break;
-            default:
-                break;
-        }
+    if ((H5Dclose(entry->id)) < 0) {
+        perror("failed to close dataset");
+    }
+    switch (entry->class) {
+        case H5T_INTEGER:
+            free(INT_DATA(entry)[0]);
+            free(INT_DATA(entry));
+            break;
+        case H5T_FLOAT:
+            free(FLOAT_DATA(entry)[0]);
+            free(FLOAT_DATA(entry));
+            break;
+        case H5T_STRING:
+            free(STR_DATA(entry));
+            break;
+        case H5T_COMPOUND:
+            free(GEN_DATA(entry));
+            break;
+        default:
+            break;
     }
 }
 
