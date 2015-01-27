@@ -43,9 +43,9 @@ Hdf5Structure <- function(file) {
   np <- new("hdf5Structure")
   slot(np, "reader") <- hd
   slot(np, "data") <- list()
-  root <- paste(hd@contents[1, ]$group, hd@contents[1, ]$name, sep="")
+  root <- "/"
                 
-  for (i in 2:length(hd@contents$name)) {
+  for (i in 1:length(hd@contents$name)) {
     row <- hd@contents[i, ]
     # only grab from the top-level
     if (row$group == root) {
@@ -57,7 +57,7 @@ Hdf5Structure <- function(file) {
   for (i in 1:length(np@data)) {
     # wrap the attributes in functions to feign lazy evaluation
     func <- paste("function(eval=T) {
-                    return(", ".access(hd,", "\"", root, "/", list.names[i],
+                    return(", ".access(hd,", "\"", root, list.names[i],
                   "\")) }", sep="")
     np@data[[i]] <- eval(parse(text=func))
   }
