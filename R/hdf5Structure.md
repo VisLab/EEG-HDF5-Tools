@@ -1,9 +1,6 @@
 #EEG-HDF5
 
-*EEG-HDF5* is a package to read data from MATLAB. Some of the features include
-
-* Dynamic class definitions
-* Lazy evaluation
+*EEG-HDF5* is a package to read data created by MATLAB.
 
 ##Dependencies
 
@@ -29,7 +26,7 @@ The only parameter is a path to a HDF5 file.
 	> np <- Hdf5Structure(file)
 	> np
 	file: file.h5
-	groups: highPass, lineNoise, reference, resampling, version
+	groups: noisyParameters
 	
 `Hdf5Structure` dynamically generates a new instance of `hdf5Structure` whose
 fields correspond to the top-level groups of the HDF5 file. In the above
@@ -41,17 +38,18 @@ example, `np` was defined according to the file that was passed to
 `groups` prints the groups that are in the `hdf5Structure` object.
 
 	> groups(np)
-	[1] "highPass"   "lineNoise"  "reference"  "resampling" "version"   
+	[1] "noisyParameters"
 	
 ###get.group(hdf5Structure, group)
 ####returns a group
 `get.group` is used to get a group from a `noisyParameter` object. If it is
 necessary, it will first evaluate the group.
 
-	> get.group(np, "highPass")$highPassFilterCommand
+	> np <- get.group(np, "noisyParameters")
+	> np$highPass$highPassFilterCommand
 	[1] "EEG1 = pop_eegfiltnew(EEG1, [], 1, 3300, true, [], 0);"
 	
-The above line roughly corresponds to
+The above lines roughly corresponds to
 	
 	np.highPass.highPassFilterCommand
 	

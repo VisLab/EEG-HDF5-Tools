@@ -14,41 +14,39 @@
     >>> np = hdf5Structure.Hdf5Structure('file.h5')
     >>> print np
     file: file.h5
-    groups: highPass, lineNoise, name, reference, resampling, version
+    groups: noisyParameters
 
 ###Methods
 ####groups
 Returns a list of the groups available in the `Hdf5Structure` object.
 
     >>> np.groups()
-    [u'highPass', u'lineNoise', u'name', u'reference', u'resampling', u'version']
+    [u'noisyParameters']
 
 ####get\_group(groupname)
 #####groupname: the name of the group
 Returns a dictionary with the datasets from `groupname`
 
     >>> np.get_group('version')
-    {u'HighPass': 'v0.21',
-     u'Interpolation': 'v0.21',
-     u'LineNoise': 'v0.21',
-     u'Reference': 'v0.21',
-     u'Resampling': 'v0.21'}
+    {u'lineNoise': {u'tau': array([[ 100.]]), u'fScanBandWidth': array([[ 2.]]),
+        u'Fs': array([[ 512.]]), u'fPassBand': array([[  45.], [ 256.]]),
+        u'taperWindowStep': array([[ 1.]]), u'taperWindowSize': array([[ 4.]]),
+        u'p': array([[ 0.01]]),
+        u'tapers': array([[  4.41025331e-05,   4.72471906e-05,   5.05019946e-05, ...,}
+    ...}
 
 ####get\_lazy\_group(groupname)
 #####groupname: the name of the group
 Returns a lazy dictionary with the datasets from `groupname`
 
-    >>> np.get_lazy_group('version')
-    {u'HighPass': <HDF5 dataset "HighPass": shape (), type "|S5">,
-     u'Interpolation': <HDF5 dataset "Interpolation": shape (), type "|S5">,
-     u'LineNoise': <HDF5 dataset "LineNoise": shape (), type "|S5">,
-     u'Reference': <HDF5 dataset "Reference": shape (), type "|S5">,
-     u'Resampling': <HDF5 dataset "Resampling": shape (), type "|S5">}
+    >>> np.get_lazy_group('noisyParameters')
+    <HDF5 group "/noisyParameters" (6 members)>
 
 you can then extract the needed value
 
-    >>> version = np.get_lazy_group('version')
-    >>> version.keys()
-    [u'Resampling', u'Interpolation', u'LineNoise', u'Reference', u'HighPass']
-    >>> version['Resampling'].value
+    >>> noisy_pam = np.get_lazy_group('noisyParameters')
+    >>> noisy_pam.keys()
+    [u'highPass', u'lineNoise', u'name', u'reference', u'resampling', u'version']
+    >>> version = noisy_pam.get('version')
+    >>> version.get('Resampling').value
     'v0.21'
