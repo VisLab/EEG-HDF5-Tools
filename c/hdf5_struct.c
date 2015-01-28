@@ -78,20 +78,20 @@ void free_hdf5_struct(const hdf5_struct_t hdf5) {
 }
 
 /*
- * Gets the names of the groups from a hdf5_struct_t object.
+ * Gets the names of the entries from a hdf5_struct_t object.
  * \param hdf5 the hdf5_struct_t object to get the names from
  * \return a pointer to an array of chars containing the names
  */
-char **groups(const hdf5_struct_t hdf5) {
+char **entries(const hdf5_struct_t hdf5) {
     char **buf = (char **) malloc(sizeof(char *) * hdf5->root->num_entries);
     if (buf == NULL) {
-        perror("malloc failed in groups():buf");
+        perror("malloc failed in entries():buf");
     }
     int i;
     for (i = 0; i < hdf5->root->num_entries; i++) {
         buf[i] = (char *) calloc(MAX_LEN, sizeof(char));
         if (buf[i] == NULL) {
-            perror("malloc failed in groups():buf[i]");
+            perror("malloc failed in entries():buf[i]");
         }
         strcpy(buf[i], hdf5->root->entries[i]->name);
     }
@@ -100,13 +100,13 @@ char **groups(const hdf5_struct_t hdf5) {
 }
 
 /*
- * Returns a specific group in the HDF5 file
+ * Returns a specific entry in the HDF5 file
  * \param hdf5 the hdf5_struct_t object to get the entry from
  * \param path the name of the entry to get
  * \return an hdf5_entry_t object or NULL if no object found
  */
-hdf5_entry_t get_group(const hdf5_struct_t hdf5, const char *path) {
-    hdf5_entry_t entry = get_subgroup(hdf5->root, path);
+hdf5_entry_t get_entry(const hdf5_struct_t hdf5, const char *path) {
+    hdf5_entry_t entry = get_subentry(hdf5->root, path);
     return entry;
 }
 
@@ -116,7 +116,7 @@ hdf5_entry_t get_group(const hdf5_struct_t hdf5, const char *path) {
  * \param path the path to the sub entry
  * \return an hdf5_entry_t object or NULL if no object found
  */
-hdf5_entry_t get_subgroup(const hdf5_entry_t entry, const char *path) {
+hdf5_entry_t get_subentry(const hdf5_entry_t entry, const char *path) {
     if (!IS_GROUP(entry)) {
         return NULL;
     }
@@ -177,7 +177,7 @@ void *get_data(const hdf5_entry_t entry) {
 void print_hdf5_struct(const hdf5_struct_t hdf5) {
     int i;
     printf("name: %s\n", hdf5->root->name);
-    printf("groups: ");
+    printf("entries: ");
     for (i = 0; i < hdf5->root->num_entries; i++) {
         printf("%s ", hdf5->root->entries[i]->name);
     }

@@ -69,19 +69,19 @@ hdf5_struct_t new_hdf5_struct(const char *path);
 void free_hdf5_struct(const hdf5_struct_t hdf5);
 
 /*
- * Gets the groups that are available in a hdf5_struct_t
+ * Gets the entries that are available in a hdf5_struct_t
  */
-char **groups(const hdf5_struct_t hdf5);
+char **entries(const hdf5_struct_t hdf5);
 
 /*
- * Returns a specific group in the HDF5 file
+ * Returns a specific entry in the HDF5 file
  */
-hdf5_entry_t get_group(const hdf5_struct_t hdf5, const char *path);
+hdf5_entry_t get_entry(const hdf5_struct_t hdf5, const char *path);
 
 /*
  * Returns a group/dataset from a group
  */
-hdf5_entry_t get_subgroup(const hdf5_entry_t entry, const char *path);
+hdf5_entry_t get_subentry(const hdf5_entry_t entry, const char *path);
 
 /*
  * Prints a hdf5_struct_t

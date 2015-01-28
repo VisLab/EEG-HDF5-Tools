@@ -24,7 +24,8 @@ process.
 
 #hdf5_struct
 `hdf5_struct` allows easier access to HDF5 files using C. It provides functions
-to create variables that represent the file, access datasets or groups in a file
+to create variables that represent the file and access datasets or groups in a
+file
 
 ##Dependencies
 * [HDF5](http://www.hdfgroup.org/HDF5/)
@@ -80,27 +81,27 @@ free_hdf5_struct(hdf5);
 ```
 
 ##Accessing Entries and Data
-###hdf5_entry_t get_group(hdf5_struct_t hdf5, char \*path)
-Returns a group or dataset from a `hdf5_struct_t` object or `NULL` if no entry
-is found.
+###hdf5_entry_t get_entry(hdf5_struct_t hdf5, char \*path)
+Returns an entry from a `hdf5_struct_t` object or `NULL` if no entry is found or
+if `path` does not point to a group.
 
-####Example for `get_group`
+####Example for `get_entry`
 ```c
 hdf5_entry_t group_b;
-if ((group_b = get_group(hdf5, "groupB")) == NULL) {
+if ((group_b = get_entry(hdf5, "groupB")) == NULL) {
     printf("failed to get groupB");
     return;
 }
 ```
 
-###hdf5_entry_t get_subgroup(hdf5_entry_t entry, char \*path)
-Returns a group or dataset from a `hdf5_entry_t` object or `NULL` if no entry
-is found.
+###hdf5_entry_t get_subentry(hdf5_entry_t entry, char \*path)
+Returns an entry from a `hdf5_entry_t` object or `NULL` if no entry
+is found or if `path` does not point to a group.
 
-####Example for `get_subgroup`
+####Example for `get_subentry`
 ```c
 hdf5_entry_t dataset_c;
-if ((dataset_c = get_subgroup(groupB, "dataC")) == NULL) {
+if ((dataset_c = get_subentry(groupB, "dataC")) == NULL) {
     printf("failed to open dataset C");
     return;
 }
@@ -188,10 +189,10 @@ int main() {
     // create the initial hdf5_struct_t object
     hdf5_struct_t hdf5 = new_hdf5_struct(file);
 
-    hdf5_entry_t np = get_group(hdf5, "noisyParameters");
+    hdf5_entry_t np = get_entry(hdf5, "noisyParameters");
 
     // get the entry named 'highPass' in the noisyParameters group
-    hdf5_entry_t high_pass = get_subgroup(np, "highPass");
+    hdf5_entry_t high_pass = get_subentry(np, "highPass");
 
     // print basic information about the entries in high_pass
     int i;
@@ -201,8 +202,8 @@ int main() {
     }
 
     /* Accessing compound data types */
-    hdf5_entry_t ref = get_subgroup(np, "reference");
-    hdf5_entry_t channel_loc = get_subgroup(ref, "channelLocations");
+    hdf5_entry_t ref = get_subentry(np, "reference");
+    hdf5_entry_t channel_loc = get_subentry(ref, "channelLocations");
     print_hdf5_entry(channel_loc);
     printf("\n");
 
