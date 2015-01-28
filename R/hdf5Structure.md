@@ -26,26 +26,26 @@ The only parameter is a path to a HDF5 file.
 	> np <- Hdf5Structure(file)
 	> np
 	file: file.h5
-	groups: noisyParameters
+	entries: noisyParameters
 	
 `Hdf5Structure` dynamically generates a new instance of `hdf5Structure` whose
-fields correspond to the top-level groups of the HDF5 file. In the above
+fields correspond to the top-level entries of the HDF5 file. In the above
 example, `np` was defined according to the file that was passed to
 `Hdf5Structure`.
 
-###groups(hdf5Structure)
-####shows the groups in the `hdf5Structure` object.
-`groups` prints the groups that are in the `hdf5Structure` object.
+###entries(hdf5Structure)
+####shows the entries in the `hdf5Structure` object.
+`entries` prints the entries that are in the `hdf5Structure` object.
 
-	> groups(np)
+	> entries(np)
 	[1] "noisyParameters"
 	
-###get.group(hdf5Structure, group)
-####returns a group
-`get.group` is used to get a group from a `noisyParameter` object. If it is
-necessary, it will first evaluate the group.
+###get.entry(hdf5Structure, entry)
+####returns a entry
+`get.entry` is used to get a entry from a `noisyParameter` object. If it is
+necessary, it will first evaluate the entry.
 
-	> np <- get.group(np, "noisyParameters")
+	> np <- get.entry(np, "noisyParameters")
 	> np$highPass$highPassFilterCommand
 	[1] "EEG1 = pop_eegfiltnew(EEG1, [], 1, 3300, true, [], 0);"
 	

@@ -64,12 +64,12 @@ Hdf5Structure <- function(file) {
   return(np)
 }
 
-# returns a group
-setGeneric('get.group', function(hdf5Structure, ...) {
-    standardGeneric('get.group')
+# returns an entry
+setGeneric('get.entry', function(hdf5Structure, ...) {
+    standardGeneric('get.entry')
   })
 
-setMethod('get.group', signature(hdf5Structure='hdf5Structure'),
+setMethod('get.entry', signature(hdf5Structure='hdf5Structure'),
   function(hdf5Structure, section) {
     if (section %in% names(hdf5Structure@data)) {
       if (typeof(hdf5Structure@data[[section]]) == "closure") {
@@ -77,11 +77,11 @@ setMethod('get.group', signature(hdf5Structure='hdf5Structure'),
       }
       return(hdf5Structure@data[[section]])  
     } else {
-      warning(paste("no group with name '", section, "' found", sep=''))
+      warning(paste("no entry with name '", section, "' found", sep=''))
     }
   })
 
-# forces evaluation of a group
+# forces evaluation of an entry
 setGeneric('.force.eval', function(hdf5Structure, ...) {
   standardGeneric('.force.eval')
 })
@@ -95,17 +95,17 @@ setMethod('.force.eval', signature(hdf5Structure='hdf5Structure'),
       }
       return(hdf5Structure)
     } else {
-      warning(paste("no group with name '", section, "' found", sep=''))  
+      warning(paste("no entry with name '", section, "' found", sep=''))  
     }
   })
 
-# shows the groups in the object
-setGeneric('groups',
+# shows the entries in the object
+setGeneric('entries',
   function(object) {
-    standardGeneric('groups')
+    standardGeneric('entries')
   })
 
-setMethod('groups', signature(object='hdf5Structure'),
+setMethod('entries', signature(object='hdf5Structure'),
   function(object) {
     return(names(object@data))
 })
@@ -114,6 +114,6 @@ setMethod('groups', signature(object='hdf5Structure'),
 setMethod("show", signature(object='hdf5Structure'),
   function(object) {
     file <- paste("file:", object@reader@file)
-    groups <- paste("groups:", paste(groups(object), collapse=", "))
-    cat(file, groups, sep="\n")
+    entries <- paste("entries:", paste(entries(object), collapse=", "))
+    cat(file, entries, sep="\n")
   })
