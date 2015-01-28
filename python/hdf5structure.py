@@ -18,39 +18,39 @@ class Hdf5Structure(object):
         self._filename = h5file
         self._h5file = h5py.File(self._filename, 'r')
 
-    def groups(self):
+    def entries(self):
         """
-        Returns the groups in the HDF5 file
-        :return: list of the top-level groups
+        Returns the entries in the HDF5 file
+        :return: list of the top-level entries
         """
         return self._h5file.keys()
 
-    def get_lazy_group(self, group):
+    def get_lazy_entry(self, entry):
         """
-        Returns a lazy group from the HDF5 file
-        :param group: the group to retrieve
-        :type group: string
+        Returns a lazy entry from the HDF5 file
+        :param entry: the entry to retrieve
+        :type entry: string
         :return: a dictionary with either Groups or Datasets
         """
         try:
-            self._h5file[group]
+            self._h5file[entry]
         except KeyError:
-            print "no group with name '{0}' found".format(group)
+            print "no entry with name '{0}' found".format(entry)
             return {}
-        return self._h5file[group]
+        return self._h5file[entry]
 
-    def get_group(self, group):
+    def get_entry(self, entry):
         """
-        Returns an evaluated group from the HDF5 file
-        :param group: the group to evaluate and retrieve
-        :type group: string
+        Returns an evaluated entry from the HDF5 file
+        :param entry: the entry to evaluate and retrieve
+        :type entry: string
         :return: a dictionary with the values evaluated
         """
-        return self._force(self.get_lazy_group(group))
+        return self._force(self.get_lazy_entry(entry))
 
     def _force(self, values):
         """
-        Evaluates a group
+        Evaluates an entry
         :param values: the values to evaluate
         :type values: dictionary
         """
@@ -64,5 +64,5 @@ class Hdf5Structure(object):
         return forced
 
     def __str__(self):
-        return "file: {0}\ngroups: {1}".format(
-            self._filename, ", ".join(self.groups()))
+        return "file: {0}\nentries: {1}".format(
+            self._filename, ", ".join(self.entries()))

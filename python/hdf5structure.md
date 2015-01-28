@@ -14,20 +14,20 @@
     >>> np = hdf5Structure.Hdf5Structure('file.h5')
     >>> print np
     file: file.h5
-    groups: noisyParameters
+    entries: noisyParameters
 
 ###Methods
-####groups
-Returns a list of the groups available in the `Hdf5Structure` object.
+####entries
+Returns a list of the entries available in the `Hdf5Structure` object.
 
-    >>> np.groups()
+    >>> np.entriess()
     [u'noisyParameters']
 
-####get\_group(groupname)
-#####groupname: the name of the group
-Returns a dictionary with the datasets from `groupname`
+####get\_entry(entryname)
+#####entryname: the name of the entry
+Returns a dictionary with the entries from `entryname`
 
-    >>> np.get_group('version')
+    >>> np.get_entry('version')
     {u'lineNoise': {u'tau': array([[ 100.]]), u'fScanBandWidth': array([[ 2.]]),
         u'Fs': array([[ 512.]]), u'fPassBand': array([[  45.], [ 256.]]),
         u'taperWindowStep': array([[ 1.]]), u'taperWindowSize': array([[ 4.]]),
@@ -35,16 +35,16 @@ Returns a dictionary with the datasets from `groupname`
         u'tapers': array([[  4.41025331e-05,   4.72471906e-05,   5.05019946e-05, ...,}
     ...}
 
-####get\_lazy\_group(groupname)
-#####groupname: the name of the group
-Returns a lazy dictionary with the datasets from `groupname`
+####get\_lazy\_entry(entryname)
+#####entryname: the name of the entry
+Returns a lazy dictionary with the entries from `entryname`
 
-    >>> np.get_lazy_group('noisyParameters')
+    >>> np.get_lazy_entry('noisyParameters')
     <HDF5 group "/noisyParameters" (6 members)>
 
 you can then extract the needed value
 
-    >>> noisy_pam = np.get_lazy_group('noisyParameters')
+    >>> noisy_pam = np.get_lazy_entry('noisyParameters')
     >>> noisy_pam.keys()
     [u'highPass', u'lineNoise', u'name', u'reference', u'resampling', u'version']
     >>> version = noisy_pam.get('version')
