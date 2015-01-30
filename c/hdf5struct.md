@@ -204,16 +204,16 @@ Returns the number of child entries belonging to `entry`.
 
 int main() {
     // the file to work with
-    char *file = "noisyParameters.h5";
+    char *file = "noiseDetection.h5";
 
     /* Basic access */
     // create the initial hdf5_struct_t object
     hdf5_struct_t hdf5 = new_hdf5_struct(file);
 
-    hdf5_entry_t np = get_entry(hdf5, "noisyParameters");
+    hdf5_entry_t nd = get_entry(hdf5, "noiseDetection");
 
-    // get the entry named 'highPass' in the noisyParameters group
-    hdf5_entry_t high_pass = get_subentry(np, "highPass");
+    // get the entry named 'highPass' in the noiseDetection group
+    hdf5_entry_t high_pass = get_subentry(nd, "highPass");
 
     // print basic information about the entries in high_pass
     int i;
@@ -223,7 +223,7 @@ int main() {
     }
 
     /* Accessing compound data types */
-    hdf5_entry_t ref = get_subentry(np, "reference");
+    hdf5_entry_t ref = get_subentry(nd, "reference");
     hdf5_entry_t channel_loc = get_subentry(ref, "channelLocations");
     print_hdf5_entry(channel_loc);
     printf("\n");

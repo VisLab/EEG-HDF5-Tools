@@ -23,34 +23,34 @@ instead use the `Hdf5Structure` function.
 `Hdf5Structure` is the main function that is made available through EEG.
 The only parameter is a path to a HDF5 file.
 
-	> np <- Hdf5Structure(file)
-	> np
+	> nd <- Hdf5Structure(file)
+	> nd
 	file: file.h5
-	entries: noisyParameters
+	entries: noiseDetection
 	
 `Hdf5Structure` dynamically generates a new instance of `hdf5Structure` whose
 fields correspond to the top-level entries of the HDF5 file. In the above
-example, `np` was defined according to the file that was passed to
+example, `nd` was defined according to the file that was passed to
 `Hdf5Structure`.
 
 ###entries(hdf5Structure)
 ####shows the entries in the `hdf5Structure` object.
 `entries` prints the entries that are in the `hdf5Structure` object.
 
-	> entries(np)
-	[1] "noisyParameters"
+	> entries(nd)
+	[1] "noiseDetection"
 	
 ###get.entry(hdf5Structure, entry)
 ####returns a entry
 `get.entry` is used to get a entry from a `noisyParameter` object. If it is
 necessary, it will first evaluate the entry.
 
-	> np <- get.entry(np, "noisyParameters")
-	> np$highPass$highPassFilterCommand
+	> nd <- get.entry(nd, "noiseDetection")
+	> nd$highPass$highPassFilterCommand
 	[1] "EEG1 = pop_eegfiltnew(EEG1, [], 1, 3300, true, [], 0);"
 	
 The above lines roughly corresponds to
 	
-	np.highPass.highPassFilterCommand
+	nd.highPass.highPassFilterCommand
 	
 in MATLAB.
