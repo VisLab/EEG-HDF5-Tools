@@ -81,6 +81,29 @@ free_hdf5_struct(hdf5);
 ```
 
 ##Accessing Entries
+**A note about accessing entries:** To improve performance, when a group is
+evaluated, only the group itself is read, this means that the children of that
+group will remain unevaluated until you call `get_entry` or `get_subentry` on
+that child entry.
+
+If you have any intention to use the entry in some way, it is recommended to
+access it using the `get_entry` or `get_subentry` functions.
+
+For example, given this structure
+
+```
+sample.h5
++---groupA
++---groupB
+    +---dataC
+...
+```
+
+when `get_entry(sample, "groupB");` is called, only the information about
+`groupB` will be evaluated, the only information known about `dataC` will be
+it's name. Calling `get_subentry(groupB, "dataC")` will evaluate `dataC` and
+fill in the missing information.
+
 ###hdf5_entry_t get_entry(hdf5_struct_t hdf5, char \*path)
 Returns an entry from a `hdf5_struct_t` object or `NULL` if no entry is found or
 if `path` does not point to a group.
