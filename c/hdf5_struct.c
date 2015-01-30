@@ -134,13 +134,6 @@ hdf5_entry_t get_subentry(const hdf5_entry_t entry, const char *path) {
         }
     }
 
-    // TODO remove for improved laziness?
-    for (i = 0; i < sub_entry->num_entries; i++) {
-        if (!sub_entry->entries[i]->evaluated) {
-            fill_entry_data(sub_entry->id, sub_entry->entries[i]);
-        }
-    }
-
     return sub_entry;
 }
 
@@ -548,6 +541,10 @@ static void read_dataset(const hid_t root, const hdf5_entry_t entry) {
  * \param entry a hdf5_entry_t object
  */
 static void print_data_type(const hdf5_entry_t entry) {
+    if (!entry->evaluated) {
+        printf("?\n");
+        return;
+    }
     switch(entry->class) {
         case H5T_INTEGER:
             printf("integer\n");
