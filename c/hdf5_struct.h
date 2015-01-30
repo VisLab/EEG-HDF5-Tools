@@ -39,7 +39,7 @@ typedef struct hdf5_entry {
     int   type;                  // the type of the entry (group or dataset)
     char  name[MAX_LEN];         // the name of the entry
     hid_t id;                    // the id of the entry
-    bool evaluated;              // whether the dataset has been read
+    bool  evaluated;             // whether the dataset has been read
     /* specific to datasets */
     H5T_class_t class;           // type of the dataset
     hsize_t     dims[2];         // dimensions of the dataset
@@ -89,9 +89,28 @@ hdf5_entry_t get_subentry(const hdf5_entry_t entry, const char *path);
 void print_hdf5_struct(const hdf5_struct_t hdf5);
 
 /*
- * Returns the data associated with a hdf5_entry_t object
+ * Returns the int data associated with hdf5_entry_t object or NULL if int data
+ * isn't available
  */
-void *get_data(const hdf5_entry_t entry);
+int **get_int_data(const hdf5_entry_t entry);
+
+/*
+ * Returns the float data associated with hdf5_entry_t object or NULL if float
+ * data isn't available
+ */
+double **get_double_data(const hdf5_entry_t entry);
+
+/*
+ * Returns the string data associated with hdf5_entry_t object or NULL if string
+ * data isn't available
+ */
+char *get_string_data(const hdf5_entry_t entry);
+
+/*
+ * Returns the compound data associated with hdf5_entry_t object or NULL if
+ * compound data isn't available
+ */
+void *get_cmpd_data(const hdf5_entry_t entry);
 
 /*
  * Prints a hdf5_entry_t

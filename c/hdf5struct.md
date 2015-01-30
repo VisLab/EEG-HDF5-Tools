@@ -80,7 +80,7 @@ Frees the memory associated with a `hdf5_entry_t` object created by
 free_hdf5_struct(hdf5);
 ```
 
-##Accessing Entries and Data
+##Accessing Entries
 ###hdf5_entry_t get_entry(hdf5_struct_t hdf5, char \*path)
 Returns an entry from a `hdf5_struct_t` object or `NULL` if no entry is found or
 if `path` does not point to a group.
@@ -107,14 +107,49 @@ if ((dataset_c = get_subentry(groupB, "dataC")) == NULL) {
 }
 ```
 
-###void \*get_data(hdf5_entry_t entry)
-Returns the data associated with a `hdf5_entry_t` object or `NULL` if the entry
-is a group
+##Accessing Data from Datasets
+###int \*\*get_int_data(hdf5_entry_t entry)
+Returns the int data associated with a `hdf5_entry_t` object or `NULL` if the
+entry is a group. If `entry` does not contain int data, a message is printed to
+stdout and `NULL` is returned.
 
-####Example for `get_data`
+####Example for `get_int_data`
 ```c
-/* assumes that dataC contains integers */
-int **buf = get_data(dataset_c);
+int **buf = get_int_data(dataset_c);
+```
+
+###double \*\*get_double_data(hdf5_entry_t entry)
+Returns the double data associated with a `hdf5_entry_t` object or `NULL` if the
+entry is a group. If `entry` does not contain double data, a message is printed
+to stdout and `NULL` is returned.
+
+####Example for `get_double_data`
+```c
+double **buf = get_double_data(dataset_c);
+```
+
+###char \*get_string_data(hdf5_entry_t entry)
+Returns the string data associated with a `hdf5_entry_t` object or `NULL` if the
+entry is a group. If `entry` does not contain string data, a message is printed
+to stdout and `NULL` is returned.
+
+####Example for `get_string_data`
+```c
+char *buf = get_string_data(dataset_c);
+```
+
+###void \*get_cmpd_data(hdf5_entry_t entry)
+Returns the compound data associated with a `hdf5_entry_t` object or `NULL` if the
+entry is a group. If `entry` does not contain compound data, a message is printed
+to stdout and `NULL` is returned.
+
+####Example for `get_compound_data`
+```c
+void *buf = get_cmpd_data(dataset_c);
+
+// alternatively, if you know the structure of the data you can use a struct
+// array
+struct <struct name> *buf = get_cmpd_data(dataset);
 ```
 
 ##Printing
@@ -135,20 +170,6 @@ print_hdf5_entry(group_B);
 ```
 
 ##Macros
-##Data Access
-###FLOAT_DATA(entry)
-Returns the double data from a `hdf5_entry_t` object.
-
-###INT_DATA(entry)
-Returns the int data from a `hdf5_entry_t` object.
-
-###STR_DATA(entry)
-Returns the string data from a `hdf5_entry_t` object.
-
-###GEN_DATA(entry)
-Returns a raw data buffer representing a compound data type from a
-`hdf5_entry_t` object.
-
 ##Attribute Access
 ###X_DIM(entry)
 Returns the first dimension of `entry`.
@@ -208,7 +229,7 @@ int main() {
     printf("\n");
 
     // get the data from channel_loc and coerce it to a channel_location array
-    struct channel_locations *buf = get_data(channel_loc);
+    struct channel_locations *buf = get_cmpd_data(channel_loc);
 
     // print the actual data
     for (i = 0; i < X_DIM(channel_loc); i++) {

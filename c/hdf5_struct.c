@@ -11,6 +11,7 @@ static void         set_group(hdf5_entry_t entry);
 static void         hdf5_struct_get_entries(hdf5_struct_t);
 static void         read_dataset(hid_t root, hdf5_entry_t entry);
 static void         print_data(hdf5_entry_t entry);
+static void         print_data_type(hdf5_entry_t entry);
 static void         free_dataset(hdf5_entry_t entry);
 static void         free_group(hdf5_entry_t entry);
 static void         free_entry(hdf5_entry_t entry);
@@ -144,30 +145,55 @@ hdf5_entry_t get_subentry(const hdf5_entry_t entry, const char *path) {
 }
 
 /*
- * Returns the data associated with a hdf5_entry_t object.
+ * Returns the int data associated with a hdf5_entry_t object.
  * \param entry the hdf5_entry_t object to access
- * \return the data associated with a hdf5_entry_t object as a void *
+ * \return the int ** associated with a hdf5_entry_t object or NULL
  */
-void *get_data(const hdf5_entry_t entry) {
-    if (IS_GROUP(entry)) {
+int **get_int_data(const hdf5_entry_t entry) {
+    if (IS_GROUP(entry) || (entry->class != H5T_INTEGER)) {
+        printf("%s does not contain integer data\n", entry->name);
         return NULL;
     }
-    switch (entry->class) {
-        case H5T_FLOAT:
-            return FLOAT_DATA(entry);
-            break;
-        case H5T_INTEGER:
-            return INT_DATA(entry);
-            break;
-        case H5T_STRING:
-            return STR_DATA(entry);
-            break;
-        case H5T_COMPOUND:
-            return GEN_DATA(entry);
-            break;
-        default:
-            return NULL;
+    return INT_DATA(entry);
+}
+
+/*
+ * Returns the float data associated with a hdf5_entry_t object.
+ * \param entry the hdf5_entry_t object to access
+ * \return the double ** associated with a hdf5_entry_t object or NULL
+ */
+double **get_double_data(const hdf5_entry_t entry) {
+    if (IS_GROUP(entry) || (entry->class != H5T_FLOAT)) {
+        printf("%s does not contain float data\n", entry->name);
+        return NULL;
     }
+    return FLOAT_DATA(entry);
+}
+
+/*
+ * Returns the string data associated with a hdf5_entry_t object.
+ * \param entry the hdf5_entry_t object to access
+ * \return the char * associated with a hdf5_entry_t object or NULL
+ */
+char *get_string_data(const hdf5_entry_t entry) {
+    if (IS_GROUP(entry) || (entry->class != H5T_STRING)) {
+        printf("%s does not contain string data\n", entry->name);
+        return NULL;
+    }
+    return STR_DATA(entry);
+}
+
+/*
+ * Returns the compound data associated with a hdf5_entry_t object.
+ * \param entry the hdf5_entry_t object to access
+ * \return the void * associated with a hdf5_entry_t object or NULL
+ */
+void *get_cmpd_data(const hdf5_entry_t entry) {
+    if (IS_GROUP(entry) || (entry->class != H5T_COMPOUND)) {
+        printf("%s does not contain compound data\n", entry->name);
+        return NULL;
+    }
+    return GEN_DATA(entry);
 }
 
 /*
@@ -204,6 +230,8 @@ void print_hdf5_entry(const hdf5_entry_t entry) {
         case H5G_DATASET:
             // conservative definition of 'large' data set
             printf("dims: %llu x %llu\n", X_DIM(entry), Y_DIM(entry));
+            printf("type: ");
+            print_data_type(entry);
             if (X_DIM(entry) * Y_DIM(entry) <= 100) {
                 print_data(entry);
             } else {
@@ -512,6 +540,29 @@ static void read_dataset(const hid_t root, const hdf5_entry_t entry) {
         case H5T_TIME:
             printf("Time not supported: %s\n. No data read", entry->name);
             break;
+    }
+}
+
+/*
+ * Prints the data type of a hdf5_entry_t object.
+ * \param entry a hdf5_entry_t object
+ */
+static void print_data_type(const hdf5_entry_t entry) {
+    switch(entry->class) {
+        case H5T_INTEGER:
+            printf("integer\n");
+            break;
+        case H5T_FLOAT:
+            printf("double\n");
+            break;
+        case H5T_STRING:
+            printf("string\n");
+            break;
+        case H5T_COMPOUND:
+            printf("compound\n");
+            break;
+        default:
+            printf("other\n");
     }
 }
 
