@@ -27,13 +27,13 @@ public class Hdf5Dataset extends Entry {
      * the basic information about a Dataset initially, this method forces the
      * datatype and the dataspace to be read.
      */
-    protected void readDataset() {
+    public void readDataset() {
         obj.open();
         // load the dataset into memory
         obj.init();
         dimens = obj.getDims();
         try {
-            data = obj.read();
+            data = obj.getData();
         } catch (Exception e) {
             System.out.println(e);
         }
