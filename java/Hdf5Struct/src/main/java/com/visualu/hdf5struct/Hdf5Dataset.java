@@ -4,6 +4,7 @@ import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.Datatype;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * A Hdf5Dataset corresponds to a dataset in a HDF5 file--and thus a concrete
@@ -57,49 +58,76 @@ public class Hdf5Dataset extends Entry {
 
     /**
      * Accesses the Dataset's raw data and converts it to a double array.
-     * Checks to ensure that the object's datatype is CLASS_FLOAT.
-     * @return a double array if the Entry's datatype is CLASS_FLOAT; else null
+     * Checks to ensure that the object's datatype is CLASS_FLOAT, if it's
+     * not, an IllegalArgumentException will be thrown.
+     * @return a double array if the Entry's datatype is CLASS_FLOAT
+     * @throws IllegalArgumentException
      */
-    public double[][] getFloatData() {
-        double[] temp = (double []) this.data;
-        if (temp.length == getXDim() * getYDim()
-                && datatypeClass == Datatype.CLASS_FLOAT) {
-            double[][] ret = new double[getXDim()][getYDim()];
+    public double[][] getFloatData() throws IllegalArgumentException {
+        if (datatypeClass != Datatype.CLASS_FLOAT) {
+            throw new IllegalArgumentException(obj.getName() +
+                " does not " + "contain float data");
+        }
+        double[] temp = (double[]) this.data;
+        double[][] ret = new double[getXDim()][getYDim()];
+        if (temp.length == getXDim() * getYDim()) {
             for (int i = 0; i < getXDim(); i++) {
                 System.arraycopy(temp, (i * getYDim()), ret[i], 0, getYDim());
             }
-            return ret;
         }
-        return null;
+        return ret;
     }
 
     /**
      * Accesses the Dataset's raw data and converts in to an int array.
-     * Checks to ensure that the object's datatype is CLASS_INTEGER.
-     * @return an int array if the Entry's datatype is CLASS_INTEGER; else null.
+     * Checks to ensure that the object's datatype is CLASS_INTEGER, it it's
+     * not, an IllegalArgumentException is thrown.
+     * @return an int array if the Entry's datatype is CLASS_INTEGER
+     * @throws IllegalArgumentException
      */
-    public int[][] getIntData() {
-        int[] temp = (int []) this.data;
-        if (temp.length == getXDim() * getYDim()
-                && datatypeClass == Datatype.CLASS_INTEGER) {
-            int[][] ret = new int[getXDim()][getYDim()];
+    public int[][] getIntData() throws IllegalArgumentException {
+        if (datatypeClass != Datatype.CLASS_INTEGER) {
+            throw new IllegalArgumentException(obj.getName() +
+                " does not " + "contain integer data");
+        }
+        int[] temp = (int[]) this.data;
+        int[][] ret = new int[getXDim()][getYDim()];
+        if (temp.length == getXDim() * getYDim()) {
             for (int i = 0; i < getXDim(); i++) {
                 System.arraycopy(temp, (i * getYDim()), ret[i], 0, getYDim());
             }
         }
-        return null;
+        return ret;
     }
 
     /**
      * Accesses the Dataset's raw data and converts it to a String array.
-     * Checks to ensure that the object's datatype is CLASS_STRING.
-     * @return a String array if the Entry's datatype is CLASS_STRING; else null
+     * Checks to ensure that the object's datatype is CLASS_STRING, if it's
+     * not, an IllegalArgumentException is thrown.
+     * @return a String array if the Entry's datatype is CLASS_STRING
+     * @throws IllegalArgumentException
      */
-    public String[] getStringData() {
-        if (datatypeClass == Datatype.CLASS_STRING) {
-            return (String[]) this.data;
+    public String[] getStringData() throws IllegalArgumentException {
+        if (datatypeClass != Datatype.CLASS_STRING) {
+            throw new IllegalArgumentException(obj.getName() +
+                " does not " + "contain String data");
         }
-        return null;
+        return (String[]) this.data;
+    }
+
+    /**
+     * Accesses the Dataset's raw data and converts in to a List of arrays.
+     * Checks to ensure that the object's datatype is CLASS_COMPOUND, if it's
+     * not, an IllegalArgumentException is thrown.
+     * @return a List of arrays if the Entry's datatype is CLASS_COMPOUND
+     * @throws IllegalArgumentException
+     */
+    public List getCompoundData() throws IllegalArgumentException {
+        if (datatypeClass != Datatype.CLASS_COMPOUND) {
+            throw new IllegalArgumentException(obj.getName() + " does not " +
+                "contain compound data");
+        }
+        return (List) this.data;
     }
 
     /**
@@ -116,9 +144,9 @@ public class Hdf5Dataset extends Entry {
      */
     public String toString() {
         return "Name: " + this.obj.getName() +
-                "\n\tDimensions: " + (dimens == null ? "?" : Arrays.toString
-                (dimens)) +
-                "\n\tType: " + this.datatypeToString();
+               "\n\tDimensions: " + (dimens == null ? "?" :
+                    Arrays.toString(dimens)) +
+               "\n\tType: " + this.datatypeToString();
     }
 
     /**
