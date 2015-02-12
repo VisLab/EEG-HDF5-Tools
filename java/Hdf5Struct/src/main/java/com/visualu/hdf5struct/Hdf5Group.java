@@ -42,9 +42,10 @@ public class Hdf5Group extends Entry implements Iterable<Entry> {
     }
 
     /**
-     * Retrieves an entry that belongs to this group.
+     * Retrieves an entry that belongs to this group and calls `readDataset`
+     * if necessary.
      * @param name the name of the entry to retrieve
-     * @return the entry named `name` or null if no entry is found.
+     * @return the entry named name or null if no entry is found.
      */
     public Entry getEntry(String name) {
         Entry entry = entries.get(name);
