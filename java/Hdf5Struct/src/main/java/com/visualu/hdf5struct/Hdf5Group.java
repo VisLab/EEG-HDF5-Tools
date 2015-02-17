@@ -7,7 +7,7 @@ import ncsa.hdf.object.h5.H5Group;
 import java.util.*;
 
 /**
- * A Hdf5Group is corresponds to a group in a HDF5 file--and thus a
+ * A Hdf5Group corresponds to a group in a HDF5 file--and thus a
  * concrete Entry--and a ncsa.hdf.h5.H5Group. It wraps the underlying H5Group
  * and supplies some convenience methods.
  */
