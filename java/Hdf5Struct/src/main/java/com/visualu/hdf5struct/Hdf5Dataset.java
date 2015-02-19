@@ -177,8 +177,8 @@ public class Hdf5Dataset extends Entry {
                 return "Reference";
             case Datatype.CLASS_STRING:
                 return "String";
-            case Datatype.CLASS_TIME:
-                return "Time";
+            /*case Datatype.CLASS_TIME:
+                return "Time";*/
             case Datatype.CLASS_VLEN:
                 return "Vlen";
         }

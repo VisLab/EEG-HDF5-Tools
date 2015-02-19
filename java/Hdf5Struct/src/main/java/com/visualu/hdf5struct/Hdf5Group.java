@@ -19,7 +19,8 @@ public class Hdf5Group extends Entry implements Iterable<Entry> {
     public Hdf5Group(H5Group obj) {
         this.obj = obj;
         obj.open();
-        for (HObject entry : obj.getMemberList()) {
+        for (Object o : obj.getMemberList()) {
+            HObject entry = (HObject) o;
             if (entry instanceof H5Group) {
                 entries.put(entry.getName(), new Hdf5Group((H5Group) entry));
             }
