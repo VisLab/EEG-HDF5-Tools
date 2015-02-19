@@ -6,20 +6,13 @@ Hdf5Struct makes reading HDF5 files easier in Java.
 ##Dependencies
 * [HDF5 Java Products](http://www.hdfgroup.org/products/java/)
 
-`Hdf5Struct` is technically a Maven project, but the jar from the HDF5 Group
-that is available on Maven's Central Repository is from 2010 and `Hdf5Struct`
-fails to build correctly. If a new version is ever available, the `pom.xml` will
-be updated.
+* Maven
 
-* Maven (to build the documentation)
+##Building and Documentation
+To build the jar, run `mvn package` a jar should now be in `./target/`
 
-##Documentation
-To generate the Javadoc for this project using Maven, run
-
-    mvn javadoc:javadoc
-
-in the root directory, and the documentation should be available in
-`target/site/apidocs`.
+To generate the Javadocs, run `mvn javadoc:javadoc` in the root directory, and
+the documentation should be available in `./target/site/apidocs`.
 
 ###General Overview
 `Hdf5Struct` provides three main classes: `Entry`, `Hdf5Group`, and
@@ -34,15 +27,15 @@ the object.
 
 ##Example
 ```java
-import com.visualu.hdf5struct;
+import com.visualu.hdf5struct.*;
 import com.visualu.hdf5struct.cmpd;
 
 public class Test {
     public static void main(String[] args) {
-        Hdf5Struct h5 = new Hdf5Struct("noiseDetection");
+        Hdf5Struct h5 = new Hdf5Struct("noiseDetection.h5");
 
         // getEntry returns a generic Entry, so the cast is necessary
-        Hdf5Group nd = (Hdf5Group) h5.getEntry("noisyParameters");
+        Hdf5Group nd = (Hdf5Group) h5.getEntry("noisyDetection");
 
         // toString is overridden for Hdf5Struct, Hdf5Group, and Hdf5Dataset
         System.out.println(nd);
@@ -74,3 +67,15 @@ public class Test {
     }
 }
 ```
+
+#Running
+Running a program that depends on the HDF5 libraries and jars involves modifying
+Java's classpath and native library path.
+
+To compile a file, run
+
+    javac -cp .:Hdf5Struct.jar <file.java>
+
+And to run the program, run
+
+    java -cp ".:Hdf5Struct.jar:<path-to-HDF5View-jars>/*" -Djava.library.path=<path-to-HDF5View-libs>" <file>
