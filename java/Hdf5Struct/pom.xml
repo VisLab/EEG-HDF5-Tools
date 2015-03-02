@@ -10,10 +10,11 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.scala-saddle</groupId>
-            <artifactId>jhdf5</artifactId>
-            <version>2.9</version>
+            <groupId>com.sis</groupId>
+            <artifactId>batteries_included</artifactId>
+            <version>14.12</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/sis-jhdf5-batteries_included.jar</systemPath>
         </dependency>
     </dependencies>
-
 </project>

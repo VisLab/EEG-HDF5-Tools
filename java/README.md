@@ -4,12 +4,11 @@
 Hdf5Struct makes reading HDF5 files easier in Java.
 
 ##Dependencies
-* [HDF5 Java Products](http://www.hdfgroup.org/products/java/)
-
-* Maven
+* [jhdf5](https://wiki-bsse.ethz.ch/pages/viewpage.action?pageId=26609113)
+* [Maven](https://maven.apache.org/)
 
 ##Building and Documentation
-To build the jar, run `mvn package` a jar should now be in `./target/`
+To build the jar, run `mvn package` and a jar should now be in `./target/`
 
 To generate the Javadocs, run `mvn javadoc:javadoc` in the root directory, and
 the documentation should be available in `./target/site/apidocs`.
@@ -68,14 +67,16 @@ public class Test {
 }
 ```
 
-#Running
-Running a program that depends on the HDF5 libraries and jars involves modifying
-Java's classpath and native library path.
+#Compiling and Running
+`jhdf5` simplifies the run process compared to the HDF Group's Java library.
+However, Java's CLASSPATH still has to be modified.
 
-To compile a file, run
+*Note: The following commands assume that `Hdf5Struct.jar` is in the working directory.*
+
+To compile a program, run
 
     javac -cp .:Hdf5Struct.jar <file.java>
 
 And to run the program, run
 
-    java -cp ".:Hdf5Struct.jar:<path-to-HDF5View-jars>/*" -Djava.library.path=<path-to-HDF5View-libs>" <file>
+    java -cp ".:Hdf5Struct.jar:<path-to-jhdf5>/lib/batteries_included/*" <file>
