@@ -1,31 +1,23 @@
 package com.visualu.hdf5struct;
 
-import ncsa.hdf.object.h5.H5File;
-import ncsa.hdf.object.h5.H5Group;
+import ch.systemsx.cisd.hdf5.HDF5Factory;
+import ch.systemsx.cisd.hdf5.IHDF5Reader;
 
 import java.util.Arrays;
 
 /**
- * Basic class to represent the overall HDF5 file.
- * This class is essentially a wrapper around the root Hdf5Group object, but
- * it also maintains information related to the file that it represents.
+ * Class to represent the overall HDF5 file. It maintains information about
+ * the root of the file as well as information about the file itself.
  */
 public class Hdf5Struct {
     private String filename;
+    private IHDF5Reader reader;
     private Hdf5Group root;
 
     public Hdf5Struct(String filename) {
         this.filename = filename;
-        H5File infile = new H5File(this.filename);
-        try {
-            infile.open();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-        // Double casting! Straight from the HDF5 Group's example
-        root = new Hdf5Group((H5Group) ((javax.swing.tree
-                .DefaultMutableTreeNode)
-                infile.getRootNode()).getUserObject());
+        this.reader = HDF5Factory.openForReading(this.filename);
+        this.root = new Hdf5Group("/", reader);
     }
 
     /**

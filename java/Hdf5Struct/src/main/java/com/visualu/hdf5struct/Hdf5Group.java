@@ -1,32 +1,28 @@
 package com.visualu.hdf5struct;
 
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.HObject;
-import ncsa.hdf.object.h5.H5Group;
+import ch.systemsx.cisd.hdf5.IHDF5Reader;
 
 import java.util.*;
 
 /**
  * A Hdf5Group corresponds to a group in a HDF5 file--and thus a
- * concrete Entry--and a ncsa.hdf.h5.H5Group. It wraps the underlying H5Group
- * and supplies some convenience methods.
+ * concrete Entry. It contains other entries that can be either Groups or
+ * Datasets. To see the names of the entries contain in a Group call the
+ * `entries` method, an Entry can be retrieved from a Group by calling the
+ * `getEntry` method with the name of the Entry. Groups also implement the
+ * Iterable interface.
  */
 public class Hdf5Group extends Entry implements Iterable<Entry> {
-    private H5Group obj;
+    private String path;
+    private IHDF5Reader reader;
     private Map<String, Entry> entries = new HashMap<String, Entry>();
     private Iterator<Entry> iterator;
 
-    public Hdf5Group(H5Group obj) {
-        this.obj = obj;
-        obj.open();
-        for (Object o : obj.getMemberList()) {
-            HObject entry = (HObject) o;
-            if (entry instanceof H5Group) {
-                entries.put(entry.getName(), new Hdf5Group((H5Group) entry));
-            }
-            if (entry instanceof Dataset) {
-                entries.put(entry.getName(), new Hdf5Dataset((Dataset) entry));
-            }
+    protected Hdf5Group(String path, IHDF5Reader reader) {
+        this.path = path;
+        this.reader = reader;
+        for (String entry : reader.getGroupMembers(path)) {
+            entries.put(entry, null);
         }
     }
 
@@ -35,10 +31,7 @@ public class Hdf5Group extends Entry implements Iterable<Entry> {
      * @return the names of the entries in an array
      */
     public String[] entries() {
-        LinkedList<String> names = new LinkedList<String>();
-        for (String name : this.entries.keySet()) {
-            names.add(name);
-        }
+        List<String> names = this.reader.getGroupMembers(path);
         return names.toArray(new String[entries.size()]);
     }
 
@@ -49,10 +42,17 @@ public class Hdf5Group extends Entry implements Iterable<Entry> {
      * @return the entry named name or null if no entry is found.
      */
     public Entry getEntry(String name) {
+        if (!reader.exists(path + name)) {
+            return null;
+        }
         Entry entry = entries.get(name);
-        // read dataset on request
-        if (entry.isDataset()) {
-            ((Hdf5Dataset) entry).readDataset();
+        // only evaluate an Entry once
+        if (entry == null) {
+            if (reader.isGroup(path + name)) {
+                return new Hdf5Group(path + name + "/", reader);
+            } else {
+                return new Hdf5Dataset(path + name + "/", reader);
+            }
         }
         return entry;
     }
@@ -70,8 +70,8 @@ public class Hdf5Group extends Entry implements Iterable<Entry> {
      * @return a nice String
      */
     public String toString() {
-        return "Name: " + this.obj.getName() +
-                "\n\tNumber of entries: " + obj.getNumberOfMembersInFile () +
+        return "Path: " + this.path +
+                "\n\tNumber of entries: " + entries.size() +
                 "\n\tEntries: " + Arrays.toString(this.entries());
     }
 
@@ -79,6 +79,11 @@ public class Hdf5Group extends Entry implements Iterable<Entry> {
      * Iterable implementation
      */
     public Iterator<Entry> iterator() {
+        // evaluate *everything* first
+        for (String name: this.entries.keySet()) {
+            entries.put(name, this.getEntry(name));
+        }
+
         List<Entry> vals = new ArrayList<Entry>(this.entries.values());
         this.iterator = vals.iterator();
         return this.iterator;
@@ -87,5 +92,4 @@ public class Hdf5Group extends Entry implements Iterable<Entry> {
     public boolean hasNext() {
         return this.iterator.hasNext();
     }
-
 }

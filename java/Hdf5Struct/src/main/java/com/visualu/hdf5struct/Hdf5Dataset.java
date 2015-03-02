@@ -1,43 +1,25 @@
 package com.visualu.hdf5struct;
 
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.Datatype;
+import ch.systemsx.cisd.hdf5.*;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * A Hdf5Dataset corresponds to a dataset in a HDF5 file--and thus a concrete
- * Entry--and a ncsa.hdf.object.Dataset. It wraps the underlying Dataset and
- * supplies some convenience methods.
+ * Entry. Datasets contain the actual data stored in the HDF5 file along with
+ * various attributes about the data such as dimensions and rank.
  */
 public class Hdf5Dataset extends Entry {
-    private Dataset obj;
-    private int datatypeClass;
-    private Object data = null;
+    private String path;
+    private IHDF5Reader reader;
+    private HDF5DataSetInformation info;
     private long[] dimens = null;
 
-    public Hdf5Dataset(Dataset obj) {
-        // do the least amount of work possible on creation
-        this.obj = obj;
-        this.datatypeClass = obj.getDatatype().getDatatypeClass();
-    }
-
-    /**
-     * Forces the dataset to be loaded into memory. The H5 library only reads
-     * the basic information about a Dataset initially, this method forces the
-     * datatype and the dataspace to be read.
-     */
-    public void readDataset() {
-        obj.open();
-        // load the dataset into memory
-        obj.init();
-        dimens = obj.getDims();
-        try {
-            data = obj.getData();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
+    protected Hdf5Dataset(String path, IHDF5Reader reader) {
+        this.path = path;
+        this.reader = reader;
+        this.info = reader.getDataSetInformation(path);
+        this.dimens = info.getDimensions();
     }
 
     /**
@@ -57,77 +39,113 @@ public class Hdf5Dataset extends Entry {
     }
 
     /**
-     * Accesses the Dataset's raw data and converts it to a double array.
-     * Checks to ensure that the object's datatype is CLASS_FLOAT, if it's
-     * not, an IllegalArgumentException will be thrown.
-     * @return a double array if the Entry's datatype is CLASS_FLOAT
-     * @throws IllegalArgumentException
+     * Returns the rank of the Dataset
+     * @return an int representing the rank of the Dataset.
      */
-    public double[][] getFloatData() throws IllegalArgumentException {
-        if (datatypeClass != Datatype.CLASS_FLOAT) {
-            throw new IllegalArgumentException(obj.getName() +
-                " does not " + "contain float data");
+    public int getRank() {
+        return this.info.getRank();
+    }
+
+    /*
+     * Reading Data
+     */
+
+    /**
+     * Access the Dataset's float matrix
+     * @return a 2D double array
+     * @throws IllegalArgumentException if the Dataset does contain a float
+     * matrix
+     */
+    public double[][] getFloatMatrix() throws IllegalArgumentException {
+        try {
+            return reader.float64().readMatrix(path);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(path +
+                " does not contain a float matrix");
         }
-        double[] temp = (double[]) this.data;
-        double[][] ret = new double[getXDim()][getYDim()];
-        if (temp.length == getXDim() * getYDim()) {
-            for (int i = 0; i < getXDim(); i++) {
-                System.arraycopy(temp, (i * getYDim()), ret[i], 0, getYDim());
-            }
-        }
-        return ret;
     }
 
     /**
-     * Accesses the Dataset's raw data and converts in to an int array.
-     * Checks to ensure that the object's datatype is CLASS_INTEGER, it it's
-     * not, an IllegalArgumentException is thrown.
-     * @return an int array if the Entry's datatype is CLASS_INTEGER
-     * @throws IllegalArgumentException
+     * Access the Dataset's float array
+     * @return a double array
+     * @throws IllegalArgumentException if the Dataset does not contain a
+     * float array
      */
-    public int[][] getIntData() throws IllegalArgumentException {
-        if (datatypeClass != Datatype.CLASS_INTEGER) {
-            throw new IllegalArgumentException(obj.getName() +
-                " does not " + "contain integer data");
+    public double[] getFloatArray() throws IllegalArgumentException {
+        if ((this.info.getRank() != 1) ||
+            (this.info.getTypeInformation().getDataClass() !=
+                HDF5DataClass.FLOAT)) {
+            throw new IllegalArgumentException(path +
+                " does not contain an integer array");
         }
-        int[] temp = (int[]) this.data;
-        int[][] ret = new int[getXDim()][getYDim()];
-        if (temp.length == getXDim() * getYDim()) {
-            for (int i = 0; i < getXDim(); i++) {
-                System.arraycopy(temp, (i * getYDim()), ret[i], 0, getYDim());
-            }
-        }
-        return ret;
+        return reader.float64().readArray(path);
     }
 
     /**
-     * Accesses the Dataset's raw data and converts it to a String array.
-     * Checks to ensure that the object's datatype is CLASS_STRING, if it's
-     * not, an IllegalArgumentException is thrown.
-     * @return a String array if the Entry's datatype is CLASS_STRING
-     * @throws IllegalArgumentException
+     * Access the Dataset's integer matrix
+     * @return a 2D integer array
+     * @throws IllegalArgumentException if the Dataset does not contain an
+     * integer matrix
      */
-    public String[] getStringData() throws IllegalArgumentException {
-        if (datatypeClass != Datatype.CLASS_STRING) {
-            throw new IllegalArgumentException(obj.getName() +
-                " does not " + "contain String data");
+    public int[][] getIntMatrix() throws IllegalArgumentException {
+        try {
+            return reader.int32().readMatrix(path);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(path +
+                " does not contain an integer matrix");
         }
-        return (String[]) this.data;
     }
 
     /**
-     * Accesses the Dataset's raw data and converts in to a List of arrays.
-     * Checks to ensure that the object's datatype is CLASS_COMPOUND, if it's
-     * not, an IllegalArgumentException is thrown.
-     * @return a List of arrays if the Entry's datatype is CLASS_COMPOUND
-     * @throws IllegalArgumentException
+     * Access the Dataset's integer array
+     * @return an integer array
+     * @throws IllegalArgumentException if the Dataset does not contain an
+     * integer array
      */
-    public List getCompoundData() throws IllegalArgumentException {
-        if (datatypeClass != Datatype.CLASS_COMPOUND) {
-            throw new IllegalArgumentException(obj.getName() + " does not " +
-                "contain compound data");
+    public int[] getIntArray() throws IllegalArgumentException {
+        if ((this.info.getRank() != 1) ||
+            (this.info.getTypeInformation().getDataClass() !=
+                HDF5DataClass.INTEGER)) {
+            throw new IllegalArgumentException(path +
+                " does not contain an integer array");
         }
-        return (List) this.data;
+        return reader.int32().readArray(path);
+    }
+
+    /**
+     * Access the Dataset's string array
+     * @return a string array
+     * @throws IllegalArgumentException if the Dataset does not contain an
+     * array of strings
+     */
+    public String getStringData() throws IllegalArgumentException {
+        try {
+            return reader.string().read(path);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(path +
+                "does not contain a string");
+        }
+    }
+
+    /**
+     * Access the Dataset's compound data
+     * @return an HDF5CompoundDataList array
+     * @throws IllegalArgumentException if the Dataset does not contain
+     * compound data
+     */
+    public HDF5CompoundDataList[] getCompoundData()
+        throws IllegalArgumentException {
+        try {
+            return reader.compound().readArray(path, HDF5CompoundDataList.class);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(path +
+                "does not contain compound data");
+        }
+    }
+
+    public String getDataType() {
+        return this.info.getTypeInformation().getDataClass().toString()
+                        .toLowerCase();
     }
 
     /**
@@ -143,45 +161,8 @@ public class Hdf5Dataset extends Entry {
      * @return a delightful string
      */
     public String toString() {
-        return "Name: " + this.obj.getName() +
-               "\n\tDimensions: " + (dimens == null ? "?" :
-                    Arrays.toString(dimens)) +
-               "\n\tType: " + this.datatypeToString();
-    }
-
-    /**
-     * Converts this object's datatype to a string
-     * @return a string representing the datatype
-     */
-    private String datatypeToString() {
-        switch (this.datatypeClass) {
-            case Datatype.CLASS_ARRAY:
-                return "Array";
-            case Datatype.CLASS_BITFIELD:
-                return "Bitfield";
-            case Datatype.CLASS_CHAR:
-                return "Char";
-            case Datatype.CLASS_COMPOUND:
-                return "Compound";
-            case Datatype.CLASS_ENUM:
-                return "Enum";
-            case Datatype.CLASS_FLOAT:
-                return "Float";
-            case Datatype.CLASS_INTEGER:
-                return "Integer";
-            case Datatype.CLASS_NO_CLASS:
-                return "No Class";
-            case Datatype.CLASS_OPAQUE:
-                return "Opaque";
-            case Datatype.CLASS_REFERENCE:
-                return "Reference";
-            case Datatype.CLASS_STRING:
-                return "String";
-            /*case Datatype.CLASS_TIME:
-                return "Time";*/
-            case Datatype.CLASS_VLEN:
-                return "Vlen";
-        }
-        return "";
+        return "Path: " + this.path +
+               "\n\tDimensions: " + Arrays.toString(this.dimens) +
+               "\n\tType: " + this.getDataType();
     }
 }
