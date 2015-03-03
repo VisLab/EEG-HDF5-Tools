@@ -69,7 +69,7 @@ public class Test {
 ```
 
 ##Example 2
-You could avoid stepping through all the groups, use the `find` methods to
+You could avoid stepping through all the groups, and use the `find` methods to
 search for Group or Dataset with a specific name.
 
 ```java
@@ -81,8 +81,8 @@ public class Test {
 		Hdf5Group ref = new Hdf5Struct("noiseDetection.h5").findGroup("reference");
 		System.out.println(ref);
 	}
-}```
-		
+}
+```
 
 #Compiling and Running
 `jhdf5` simplifies the run process compared to the HDF Group's Java library.
