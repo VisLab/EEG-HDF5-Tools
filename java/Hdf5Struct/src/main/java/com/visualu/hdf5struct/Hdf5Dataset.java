@@ -5,9 +5,9 @@ import ch.systemsx.cisd.hdf5.*;
 import java.util.Arrays;
 
 /**
- * A Hdf5Dataset corresponds to a dataset in a HDF5 file--and thus a concrete
- * Entry. Datasets contain the actual data stored in the HDF5 file along with
- * various attributes about the data such as dimensions and rank.
+ * A Hdf5Dataset corresponds to a dataset in a HDF5 file. Datasets contain the
+ * actual data stored in the HDF5 file along with various attributes about
+ * the data such as dimensions and rank.
  */
 public class Hdf5Dataset extends Entry {
     private String path;
@@ -143,6 +143,10 @@ public class Hdf5Dataset extends Entry {
         }
     }
 
+    /**
+     * Returns the type of the Dataset
+     * @return the type of the Dataset as a String
+     */
     public String getDataType() {
         return this.info.getTypeInformation().getDataClass().toString()
                         .toLowerCase();
