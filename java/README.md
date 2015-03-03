@@ -1,4 +1,4 @@
-<!--- Written in GitHub falvored Markdown -->
+<!--- Written in GitHub flavoured Markdown -->
 #Hdf5Struct
 
 Hdf5Struct makes reading HDF5 files easier in Java.
@@ -50,9 +50,10 @@ public class Test {
         }
 
         /* Reading compound datasets */
-        Hdf5Group ref = (Hdf5Group) nd.getEntry("reference");
-        Hdf5Dataset channelLocations = (Hdf5Dataset)
-            ref.getEntry("channelLocations");
+		// You could use the more specific getGroup to avoid the cast
+        Hdf5Group ref = nd.getGroup("reference");
+		// and getDataset
+        Hdf5Dataset channelLocations = ref.getDataset("channelLocations");
 
         // ChannelLocations provides a static method--fromList--to convert the
         // data from a compound dataset into an array of ChannelLocations
@@ -66,6 +67,22 @@ public class Test {
     }
 }
 ```
+
+##Example 2
+You could avoid stepping through all the groups, use the `find` methods to
+search for Group or Dataset with a specific name.
+
+```java
+import com.visualu.hdf5struct.*;
+
+public class Test {
+	public static void main(String[] args) {
+		// if all you want is the reference group...
+		Hdf5Group ref = new Hdf5Struct("noiseDetection.h5").findGroup("reference");
+		System.out.println(ref);
+	}
+}```
+		
 
 #Compiling and Running
 `jhdf5` simplifies the run process compared to the HDF Group's Java library.
