@@ -21,12 +21,48 @@ public class Hdf5Struct {
     }
 
     /**
-     * Returns an entry with a specific name
+     * Returns a generic entry with a specific name
      * @param name the name of the Entry to search for
      * @return an Entry
      */
     public Entry getEntry(String name) {
         return root.getEntry(name);
+    }
+
+    /**
+     * Retrieves a Group from root
+     * @param name the name of the Group to retrieve
+     * @return a Hdf5Group or null if no Group was found
+     */
+    public Hdf5Group getGroup(String name) {
+        return root.getGroup(name);
+    }
+
+    /**
+     * Retrieves a Dataset from root
+     * @param name the name of the Dataset to retrieve
+     * @return a Hdf5Dataset or null if no Dataset was found.
+     */
+    public Hdf5Dataset getDataset(String name) {
+        return root.getDataset(name);
+    }
+
+    /**
+     * Searches the entire file for a Group
+     * @param name the name of the Group to search for
+     * @return the first Group named name or null if no Group was found
+     */
+    public Hdf5Group findGroup(String name) {
+        return root.findGroup(name);
+    }
+
+    /**
+     * Searches the entire file for a Dataset
+     * @param name the name of the Dataset to search for
+     * @return the first Dataset named name or null if no Dataset was found
+     */
+    public Hdf5Dataset findDataset(String name) {
+        return root.findDataset(name);
     }
 
     /**

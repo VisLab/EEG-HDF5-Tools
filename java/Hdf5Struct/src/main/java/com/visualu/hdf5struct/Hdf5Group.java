@@ -5,12 +5,11 @@ import ch.systemsx.cisd.hdf5.IHDF5Reader;
 import java.util.*;
 
 /**
- * A Hdf5Group corresponds to a group in a HDF5 file--and thus a
- * concrete Entry. It contains other entries that can be either Groups or
- * Datasets. To see the names of the entries contain in a Group call the
- * `entries` method, an Entry can be retrieved from a Group by calling the
- * `getEntry` method with the name of the Entry. Groups also implement the
- * Iterable interface.
+ * A Hdf5Group corresponds to a group in a HDF5 file. It contains other
+ * entries that can be either Groups or Datasets. To see the names of the
+ * entries contain in a Group call the `entries` method, an Entry can be
+ * retrieved from a Group by calling the `getEntry` method with the name of
+ * the Entry. Groups also implement the Iterable interface.
  */
 public class Hdf5Group extends Entry implements Iterable<Entry> {
     private String path;
@@ -36,8 +35,7 @@ public class Hdf5Group extends Entry implements Iterable<Entry> {
     }
 
     /**
-     * Retrieves an entry that belongs to this group and calls `readDataset`
-     * if necessary.
+     * Retrieves a generic Entry that belongs to this group.
      * @param name the name of the entry to retrieve
      * @return the entry named name or null if no entry is found.
      */
@@ -55,6 +53,84 @@ public class Hdf5Group extends Entry implements Iterable<Entry> {
             }
         }
         return entry;
+    }
+
+    /**
+     * Retrieves a Group that belongs to this group
+     * @param name the name of the group to retrieve
+     * @return a Hdf5Group or null if no Group was found
+     */
+    public Hdf5Group getGroup(String name) {
+        Entry e = this.getEntry(name);
+        if (e.isGroup()) {
+            return ((Hdf5Group) e);
+        }
+
+        return null;
+    }
+
+    /**
+     * Searches through this group and all sub-groups for a Group
+     * @param name the name of the Group to search for
+     * @return the first Hdf5Group named name or null if no Group was found.
+     */
+    public Hdf5Group findGroup(String name) {
+        // look for a group in this group
+        if (this.entries.containsKey(name) && this.getEntry(name).isGroup()) {
+            return this.getGroup(name);
+        } else {
+            // look in subgroups
+            Hdf5Group result;
+            for (Entry e: this) {
+                if (e.isGroup()) {
+                    Hdf5Group g = (Hdf5Group) e;
+                    result = g.findGroup(name);
+                    if (result != null) {
+                        return result;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves a Dataset that belongs to this group
+     * @param name the name of the dataset to retrieve
+     * @return a Hdf5Dataset or null if no Dataset was found
+     */
+    public Hdf5Dataset getDataset(String name) {
+        Entry e = this.getEntry(name);
+        if (e.isDataset()) {
+            return ((Hdf5Dataset) e);
+        }
+        return null;
+    }
+
+    /**
+     * Searches through this group and all sub-groups for a Dataset
+     * @param name the name of the Dataset to search for
+     * @return the first Hdf5Dataset named name or null if no Dataset was found.
+     */
+    public Hdf5Dataset findDataset(String name) {
+        // look for a dataset in this group
+        if (this.entries.containsKey(name) && this.getEntry(name).isDataset()) {
+            return this.getDataset(name);
+        }
+        else {
+            // look in subgroups
+            Hdf5Dataset result;
+            for (Entry e: this) {
+                if (e.isGroup()) {
+                    Hdf5Group g = (Hdf5Group) e;
+                    result = g.findDataset(name);
+                    if (result != null) {
+                        return result;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
