@@ -1,13 +1,20 @@
 package com.visualu.hdf5struct;
 
-import ch.systemsx.cisd.hdf5.*;
+import ch.systemsx.cisd.base.mdarray.MDDoubleArray;
+import ch.systemsx.cisd.base.mdarray.MDIntArray;
+import ch.systemsx.cisd.hdf5.HDF5CompoundDataList;
+import ch.systemsx.cisd.hdf5.HDF5DataClass;
+import ch.systemsx.cisd.hdf5.HDF5DataSetInformation;
+import ch.systemsx.cisd.hdf5.IHDF5Reader;
 
 import java.util.Arrays;
 
 /**
  * A Hdf5Dataset corresponds to a dataset in a HDF5 file. Datasets contain the
  * actual data stored in the HDF5 file along with various attributes about
- * the data such as dimensions and rank.
+ * the data such as dimensions and rank. The methods to get numeric datasets
+ * returns a MDArray from the jhdf5 library. To get the data into an array
+ * call getAsFlatArray or toMatrix.
  */
 public class Hdf5Dataset extends Entry {
     private String path;
@@ -51,79 +58,53 @@ public class Hdf5Dataset extends Entry {
      */
 
     /**
-     * Access the Dataset's float matrix
-     * @return a 2D double array
-     * @throws IllegalArgumentException if the Dataset does contain a float
-     * matrix
+     * Access the Dataset's double data.
+     * @return a MDDoubleArray containing doubles
+     * @throws IllegalArgumentException if the Dataset does not contain doubles
      */
-    public double[][] getFloatMatrix() throws IllegalArgumentException {
-        try {
-            return reader.float64().readMatrix(path);
-        } catch (Exception e) {
+    public MDDoubleArray getDoubleData() throws IllegalArgumentException {
+        if (this.info.getTypeInformation().getDataClass() !=
+                HDF5DataClass.FLOAT) {
             throw new IllegalArgumentException(path +
-                " does not contain a float matrix");
+                "does not contain float data");
+        }
+        if (this.info.getRank() > 1) {
+            return new MDDoubleArray(reader.float64().readArray(path), dimens);
+        } else {
+            return new MDDoubleArray(reader.float64().readMatrix(path));
         }
     }
 
     /**
-     * Access the Dataset's float array
-     * @return a double array
-     * @throws IllegalArgumentException if the Dataset does not contain a
-     * float array
+     * Access the Dataset's integer data
+     * @return a MDIntArray containing integers
+     * @throws IllegalArgumentException if the Dataset does not contain integers
      */
-    public double[] getFloatArray() throws IllegalArgumentException {
-        if ((this.info.getRank() != 1) ||
-            (this.info.getTypeInformation().getDataClass() !=
-                HDF5DataClass.FLOAT)) {
+    public MDIntArray getIntData() throws IllegalArgumentException {
+        if (this.info.getTypeInformation().getDataClass() !=
+                HDF5DataClass.INTEGER) {
             throw new IllegalArgumentException(path +
-                " does not contain an integer array");
+                "does not contain integer data");
         }
-        return reader.float64().readArray(path);
-    }
-
-    /**
-     * Access the Dataset's integer matrix
-     * @return a 2D integer array
-     * @throws IllegalArgumentException if the Dataset does not contain an
-     * integer matrix
-     */
-    public int[][] getIntMatrix() throws IllegalArgumentException {
-        try {
-            return reader.int32().readMatrix(path);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(path +
-                " does not contain an integer matrix");
+        if (this.info.getRank() > 1) {
+            return new MDIntArray(reader.int32().readArray(path), dimens);
+        } else {
+            return new MDIntArray(reader.int32().readMatrix(path));
         }
     }
 
     /**
-     * Access the Dataset's integer array
-     * @return an integer array
-     * @throws IllegalArgumentException if the Dataset does not contain an
-     * integer array
-     */
-    public int[] getIntArray() throws IllegalArgumentException {
-        if ((this.info.getRank() != 1) ||
-            (this.info.getTypeInformation().getDataClass() !=
-                HDF5DataClass.INTEGER)) {
-            throw new IllegalArgumentException(path +
-                " does not contain an integer array");
-        }
-        return reader.int32().readArray(path);
-    }
-
-    /**
-     * Access the Dataset's string array
+     * Access the Dataset's String data
      * @return a string array
      * @throws IllegalArgumentException if the Dataset does not contain an
      * array of strings
      */
-    public String getStringData() throws IllegalArgumentException {
+    public String[] getStringData() throws IllegalArgumentException {
         try {
-            return reader.string().read(path);
+            return reader.string().readArray(path);
         } catch (Exception e) {
             throw new IllegalArgumentException(path +
-                "does not contain a string");
+                "does not contain string data");
         }
     }
 
