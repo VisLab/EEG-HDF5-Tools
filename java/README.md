@@ -24,7 +24,7 @@ entry.
 Hdf5Dataset objects have methods to read the dataset and to get the dataset from
 the object.
 
-##Example
+##Example 1
 ```java
 import com.visualu.hdf5struct.*;
 import com.visualu.hdf5struct.cmpd;
@@ -80,6 +80,21 @@ public class Test {
 		// if all you want is the reference group...
 		Hdf5Group ref = new Hdf5Struct("noiseDetection.h5").findGroup("reference");
 		System.out.println(ref);
+	}
+}
+```
+
+##Example 3
+You could also write new datasets to the HDF5 file using the `writeDataset`
+method.
+
+```java
+import com.visualu.hdf5struct.*;
+
+public class Test {
+	public static void main(String[] args) {
+		Hdf5Struct hdf5 = new Hdf5Struct("noiseDetection.h5");
+		hdf5.writeDataset("noiseDetection/sample", new int[]{1, 2, 3, 4});
 	}
 }
 ```

@@ -68,7 +68,7 @@ public class Hdf5Dataset extends Entry {
             throw new IllegalArgumentException(path +
                 "does not contain float data");
         }
-        if (this.info.getRank() > 1) {
+        if (this.info.getRank() == 1) {
             return new MDDoubleArray(reader.float64().readArray(path), dimens);
         } else {
             return new MDDoubleArray(reader.float64().readMatrix(path));
@@ -86,7 +86,7 @@ public class Hdf5Dataset extends Entry {
             throw new IllegalArgumentException(path +
                 "does not contain integer data");
         }
-        if (this.info.getRank() > 1) {
+        if (this.info.getRank() == 1) {
             return new MDIntArray(reader.int32().readArray(path), dimens);
         } else {
             return new MDIntArray(reader.int32().readMatrix(path));

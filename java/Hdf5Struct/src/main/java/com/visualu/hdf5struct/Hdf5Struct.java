@@ -1,7 +1,7 @@
 package com.visualu.hdf5struct;
 
 import ch.systemsx.cisd.hdf5.HDF5Factory;
-import ch.systemsx.cisd.hdf5.IHDF5Reader;
+import ch.systemsx.cisd.hdf5.IHDF5Writer;
 
 import java.util.Arrays;
 
@@ -11,13 +11,13 @@ import java.util.Arrays;
  */
 public class Hdf5Struct {
     private String filename;
-    private IHDF5Reader reader;
+    private IHDF5Writer writer;
     private Hdf5Group root;
 
     public Hdf5Struct(String filename) {
         this.filename = filename;
-        this.reader = HDF5Factory.openForReading(this.filename);
-        this.root = new Hdf5Group("/", reader);
+        this.writer = HDF5Factory.open(this.filename);
+        this.root = new Hdf5Group("/", writer);
     }
 
     /**
@@ -63,6 +63,46 @@ public class Hdf5Struct {
      */
     public Hdf5Dataset findDataset(String name) {
         return root.findDataset(name);
+    }
+
+    /**
+     * Creates a new dataset in the HDF5 file
+     * @param path the path of the new dataset
+     * @param data the double array to write
+     */
+    public void writeDataset(String path, double data[]) {
+        this.writer.float64().createArray(path, data.length);
+        this.writer.float64().writeArray(path, data);
+    }
+
+    /**
+     * Creates a new dataset in the HDF5 file
+     * @param path the path of the new dataset
+     * @param data the double matrix to write
+     */
+    public void writeDataset(String path, double data[][]) {
+        this.writer.float64().createMatrix(path, data.length, data[0].length);
+        this.writer.float64().writeMatrix(path, data);
+    }
+
+    /**
+     * Creates a new dataset in the HDF5 file
+     * @param path the path of the new dataset
+     * @param data the integer array to write
+     */
+    public void writeDataset(String path, int data[]) {
+        this.writer.int32().createArray(path, data.length);
+        this.writer.int32().writeArray(path, data);
+    }
+
+    /**
+     * Creates a new dataset in the HDF5 file
+     * @param path the path of the new dataset
+     * @param data the integer matrix to write
+     */
+    public void writeDataset(String path, int data[][]) {
+        this.writer.int32().createMatrix(path, data.length, data[0].length);
+        this.writer.int32().writeMatrix(path, data);
     }
 
     /**
