@@ -110,6 +110,17 @@ setMethod('entries', signature(object='hdf5Structure'),
     return(names(object@data))
 })
 
+# updates or creates a new dataset
+setGeneric('write.dataset',
+  function(object, path, obj) {
+    standardGeneric('write.dataset')
+  })
+
+setMethod('write.dataset', signature(object='hdf5Structure', path='character', obj='ANY'),
+  function(object, path, obj) {
+    h5write(obj, object@reader@file, path)
+  })
+
 # custom show function
 setMethod("show", signature(object='hdf5Structure'),
   function(object) {

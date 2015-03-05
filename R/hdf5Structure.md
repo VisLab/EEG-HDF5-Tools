@@ -54,3 +54,15 @@ The above lines roughly corresponds to
 	nd.highPass.highPassFilterCommand
 	
 in MATLAB.
+
+###write.dataset(hdf5Structure, location, object)
+####writes a new entry in the HDF5 file
+`write.dataset` is used to update the existing HDF5 file with a new dataset. The new
+entry, the `object` parameter, will be written at `location`.
+
+For example
+
+	> write.dataset(nd, "noiseDetection/sample", 1:1000)
+	
+will create a new dataset located at "noiseDetection/sample" consisting of the
+numbers 1 through 1000.
