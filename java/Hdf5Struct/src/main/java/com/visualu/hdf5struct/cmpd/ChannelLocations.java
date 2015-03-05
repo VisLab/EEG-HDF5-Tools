@@ -16,10 +16,10 @@ public class ChannelLocations {
     private double urchan;
     private String ref;
 
-    public ChannelLocations(String labels, String type, double theta,
+    public ChannelLocations(String labels, double theta,
                             double radius, double X, double Y, double Z,
-                            double sph_theta, double sph_phi,
-                            double sph_radius, double urchan, String ref) {
+                            double sph_theta, double sph_phi, double sph_radius,
+                            String type, double urchan, String ref) {
         this.labels = labels;
         this.type = type;
         this.theta = theta;
@@ -50,11 +50,11 @@ public class ChannelLocations {
         for (int i = 0; i < list.length; i++) {
             //System.out.println(list[i].get(0));
             cls[i] = new ChannelLocations(
-               ((String) list[i].get(0)), ((String) list[i].get(1)),
+               ((String) list[i].get(0)), ((Double) list[i].get(1)),
                ((Double) list[i].get(2)), ((Double) list[i].get(3)),
                ((Double) list[i].get(4)), ((Double) list[i].get(5)),
                ((Double) list[i].get(6)), ((Double) list[i].get(7)),
-               ((Double) list[i].get(8)), ((Double) list[i].get(9)),
+               ((Double) list[i].get(8)), ((String) list[i].get(9)),
                ((Double) list[i].get(10)), ((String) list[i].get(11)));
         }
         return cls;
