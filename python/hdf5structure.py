@@ -16,7 +16,7 @@ class Hdf5Structure(object):
         :type h5file: string
         """
         self._filename = h5file
-        self._h5file = h5py.File(self._filename, 'r')
+        self._h5file = h5py.File(self._filename, 'r+')
 
     def entries(self):
         """
@@ -24,6 +24,15 @@ class Hdf5Structure(object):
         :return: list of the top-level entries
         """
         return self._h5file.keys()
+
+    def write_dataset(self, path, data):
+        """
+        Creates and writes a new dataset in the HDF5 file
+        :param path: the path of the new dataset to create
+        :type path: string
+        :param data: the dataset to write to HDF5 file
+        """
+        self._h5file.create_dataset(path, data=data)
 
     def get_lazy_entry(self, entry):
         """

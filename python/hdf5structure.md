@@ -50,3 +50,15 @@ you can then extract the needed value
     >>> version = noisy_det.get('version')
     >>> version.get('Resampling').value
     'v0.21'
+
+####write\_dataset(path, data)
+#####path: the path of the dataset to create
+#####data: the data to write to the HDF5 file
+Creates and writes a new dataset to the HDF5 file.
+
+For example
+
+    >>> sample = nd.write_dataset('noiseDetection/sample', range(1, 1000))
+
+will create a new dataset located at "noiseDetection/sample" consisting of the
+numbers 1 through 1000
