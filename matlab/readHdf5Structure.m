@@ -68,7 +68,7 @@ H5F.close(fileId);
                     dataset = double.empty(dims);
             end
         elseif isscalar(dataset) && isequal('double',class(dataset)) ...
-                && (dataset == 0 || dataset == 1)
+                && ~isStructField && (dataset == 0 || dataset == 1)
             datasetIsLogical = readAttribute(datasetId, 'islogical')';
             if strcmpi('true', datasetIsLogical)
                 dataset = logical(dataset);
