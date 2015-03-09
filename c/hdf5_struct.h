@@ -113,6 +113,35 @@ char *get_string_data(const hdf5_entry_t entry);
 void *get_cmpd_data(const hdf5_entry_t entry);
 
 /*
+ * Writes an integer array
+ */
+void write_int_array(hdf5_entry_t entry, const char *name, const hsize_t *dims,
+                    int *buf);
+
+/*
+ * Writes an integer matrix
+ */
+void write_int_matrix(hdf5_entry_t entry, const char *name, const hsize_t *dims,
+                      int *buf);
+
+/*
+ * Writes a double array
+ */
+void write_double_array(hdf5_entry_t entry, const char *name, const hsize_t *dims,
+                        double *buf);
+
+/*
+ * Writes a double matrix
+ */
+void write_double_matrix(hdf5_entry_t entry, const char *name,
+                         const hsize_t *dims, double *buf);
+
+/*
+ * Writes a string
+ */
+void write_string(hdf5_entry_t entry, const char *name, const char *buf);
+
+/*
  * Prints a hdf5_entry_t
  */
 void print_hdf5_entry(const hdf5_entry_t);

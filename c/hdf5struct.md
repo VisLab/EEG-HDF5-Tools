@@ -56,7 +56,17 @@ sample.h5          // hdf5_struct_t: represents the entire file
 ```
 
 ##Functions
-##Creation and Deletion
+[Creation and Deletion](#creation)
+
+[Accessing Entries](#accessing)
+
+[Accessing Data from Datasets](#data)
+
+[Writing Data](#writing)
+
+[Printing](#printing)
+
+##<a name="creation"></a>Creation and Deletion
 ###new_hdf5_struct(char \*path)
 Creates a new `hdf5_struct_t` object from the file path `path`. If any errors
 occur `NULL` is returned. Free the memory associated with the pointer returned
@@ -80,7 +90,7 @@ Frees the memory associated with a `hdf5_entry_t` object created by
 free_hdf5_struct(hdf5);
 ```
 
-##Accessing Entries
+##<a name="accessing"></a>Accessing Entries
 **A note about accessing entries:** To improve performance, when a group is
 evaluated, only the group itself is read, this means that the children of that
 group will remain unevaluated until you call `get_entry` or `get_subentry` on
@@ -130,7 +140,7 @@ if ((dataset_c = get_subentry(groupB, "dataC")) == NULL) {
 }
 ```
 
-##Accessing Data from Datasets
+##<a name="data"></a>Accessing Data from Datasets
 ###int \*\*get_int_data(hdf5_entry_t entry)
 Returns the int data associated with a `hdf5_entry_t` object or `NULL` if the
 entry is a group. If `entry` does not contain int data, a message is printed to
@@ -175,7 +185,102 @@ void *buf = get_cmpd_data(dataset_c);
 struct <struct name> *buf = get_cmpd_data(dataset);
 ```
 
-##Printing
+##<a name="writing"></a>Writing Data
+**Note**: the HDF5 library expects data written to files to be contiguous blocks
+of memory. Because of this, explicitly malloc'd arrays should be used. While
+this is straight-forward with arrays, writing matrices invloves 'flattening' them
+and treating an array as a matrix.
+
+###void write_int_array(hdf5_entry_t entry, const char \*name, const hsize_t \*dims, int \*data)
+Creates a new dataset in the group represented by `entry`. The name of the
+dataset will be `name`. `dims` should be an array with the dimensions of the new
+dataset and `data` is the actual data to be written.
+
+####Example for `write_int_array`
+```c
+int i = 0;
+hsize_t dims[1] = {10};
+int *array = (int *) malloc(sizeof(int) * 10);
+
+for (i = 0; i < 10; i++) {
+    array[i] = i;
+}
+
+write_int_array(nd, "sample", dims, array);
+```
+
+###void write_double_array(hdf5_entry_t entry, const char \*name, const hsize_t \*dims, double \*data)
+Creates a new dataset in the group represented by `entry`. The name of the
+dataset will be `name`. `dims` should be an array with the dimensions of the new
+dataset and `data` is the actual data to be written.
+
+####Example for `write_double_array`
+```c
+int i = 0;
+hsize_t dims[1] = {10};
+double *array = (double *) malloc(sizeof(double) * 10);
+
+for (i = 0; i < 10; i++) {
+    array[i] = 3.16;
+}
+
+write_double_array(nd, "sample", dims, array);
+```
+
+###void write_int_matrix(hdf5_entry_t entry, const char \*name, const hsize_t \*dims, int \*data)
+Creates a new dataset in the group represented by `entry`. The name of the
+dataset will be `name`. `dims` should be an array with the dimensions of the new
+dataset and `data` is the actual data to be written.
+
+####Example for `write_int_matrix`
+```c
+int width = 10;
+int height = 10;
+int i, j;
+hsize_t dims[2] = {width, height};
+int *matrix = (int *) malloc(sizeof(int) * width * height);
+for (i = 0; i < width; i++) {
+    for (j = 0; j < height; j++) {
+        matrix[i + j * width] = 0.0;
+    }
+}
+
+write_int_matrix(nd, "sample", dims, matrix);
+```
+
+###void write_double_matrix(hdf5_entry_t entry, const char \*name, const hsize_t \*dims, int \*data)
+Creates a new dataset in the group represented by `entry`. The name of the
+dataset will be `name`. `dims` should be an array with the dimensions of the new
+dataset and `data` is the actual data to be written.
+
+####Example for `write_double_matrix`
+```c
+int width = 10;
+int height = 10;
+int i, j;
+hsize_t dims[2] = {width, height};
+double *matrix = (double *) malloc(sizeof(double) * width * height);
+for (i = 0; i < width; i++) {
+    for (j = 0; j < height; j++) {
+        matrix[i + j * width] = 0.0;
+    }
+}
+
+write_double_matrix(nd, "sample", dims, matrix);
+```
+
+###void write_string(hdf5_entry_t entry, const char \*name, const char \*buf)
+Creates a new dataset in the group represented by `entry`. The name of the
+dataset will be `name` and `data` is the actual data to be written.
+
+####Example for `write_string`
+```c
+char *name = (char *) malloc(sizeof(char) * 10);
+strcpy(name, "HDF5");
+write_string(nd, "name", name);
+```
+
+##<a name="printing"></a>Printing
 ###print_hdf5_struct(hdf5_struct_t hdf5)
 Prints basic information about a `hdf5_struct_t` object.
 

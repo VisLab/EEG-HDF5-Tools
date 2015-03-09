@@ -29,7 +29,7 @@ hdf5_struct_t new_hdf5_struct(const char *path) {
         return NULL;
     }
 
-    if ((hdf5->in_file = H5Fopen(path, H5F_ACC_RDONLY, H5P_DEFAULT)) < 0) {
+    if ((hdf5->in_file = H5Fopen(path, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         perror("failed to open file");
         free(hdf5);
         return NULL;
@@ -187,6 +187,90 @@ void *get_cmpd_data(const hdf5_entry_t entry) {
         return NULL;
     }
     return GEN_DATA(entry);
+}
+
+/*
+ * Writes an integer array to a group
+ * \param hdf5 the group to create the entry in
+ * \param name the name of the new dataset
+ * \param dims the dimensions of the new dataset
+ * \param buf the data to write
+ */
+void write_int_array(hdf5_entry_t entry, const char *name, const hsize_t *dims,
+                    int *buf) {
+    if (!IS_GROUP(entry)) {
+        return;
+    }
+    if ((H5LTmake_dataset_int(entry->id, name, 1, (hsize_t *) dims, buf)) < 0) {
+        printf("failed to write dataset\n");
+    }
+}
+
+/*
+ * Writes an integer matrix to a group
+ * \param hdf5 the group to create the entry in
+ * \param name the name of the new dataset
+ * \param dims the dimensions of the new dataset
+ * \param buf the data to write
+ */
+void write_int_matrix(hdf5_entry_t entry, const char *name, const hsize_t *dims,
+                      int *buf) {
+    if (!IS_GROUP(entry)) {
+        return;
+    }
+    if ((H5LTmake_dataset_int(entry->id, name, 2, dims, buf)) < 0) {
+        printf("failed to write dataset\n");
+    }
+}
+
+/*
+ * Writes a double array to a group
+ * \param hdf5 the group to create the entry in
+ * \param name the name of the new dataset
+ * \param dims the dimensions of the new dataset
+ * \param buf the data to write
+ */
+void write_double_array(hdf5_entry_t entry, const char *name, const hsize_t *dims,
+                    double *buf) {
+    if (!IS_GROUP(entry)) {
+        return;
+    }
+    if ((H5LTmake_dataset_double(entry->id, name, 1,
+                (hsize_t *) dims, buf)) < 0) {
+        printf("failed to write dataset\n");
+    }
+}
+
+/*
+ * Writes a double matrix to a group
+ * \param hdf5 the group to create the entry in
+ * \param name the name of the new dataset
+ * \param dims the dimensions of the new dataset
+ * \param buf the data to write
+ */
+void write_double_matrix(hdf5_entry_t entry, const char *name, const hsize_t *dims,
+                         double *buf) {
+    if (!IS_GROUP(entry)) {
+        return;
+    }
+    if ((H5LTmake_dataset_double(entry->id, name, 2, dims, buf)) < 0) {
+        printf("failed to write dataset\n");
+    }
+}
+
+/*
+ * Writes a string to a group
+ * \param hdf5 the group to create the entry in
+ * \param name the name of the new dataset
+ * \param buf the data to write
+ */
+void write_string(hdf5_entry_t entry, const char *name, const char *buf) {
+    if (!IS_GROUP(entry)) {
+        return;
+    }
+    if ((H5LTmake_dataset_string(entry->id, name, buf)) < 0) {
+        printf("failed to write dataset\n");
+    }
 }
 
 /*
