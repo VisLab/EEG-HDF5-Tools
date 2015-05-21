@@ -18,6 +18,8 @@ writeHdf5Structure(file, root, structure)
 
 ## Examples
 
+Creates a HDF5 file 'noisyParameters.h5' and writes the contents of the structure EEG.etc.noiseDetection to dataset /noisyParameters.
+
 writeHdf5Structure('noisyParameters.h5', '/noisyParameters', EEG.etc.noiseDetection);
 
 ## Notes
