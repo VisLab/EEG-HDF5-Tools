@@ -1,17 +1,32 @@
-function writeHdf5Structure(file, root, structure)
+function writeHdf5Structure(hdf5File, dataset, structure)
 % Creates a HDF5 file and writes the contents of a structure to it
 %
-% writeHdf5Structure(file, root, structure)
+% Usage:
+% writeHdf5Structure(hdf5File, dataset, structure)
 %
 % Input:
-%   file            The name of the file
-%   root            The name of the structure
-%   structure       The structure containing the data
+%   hdf5File        The name of the HDF5 file to write the structure to 
+%   dataset         The name of the HDF5 dataset to write the structure to 
+%   structure       The structure array containing the data
 %
+% Examples:
+%   Creates a HDF5 file 'noisyParameters.h5' and writes the contents of the
+%   structure EEG.etc.noiseDetection to dataset /noisyParameters.
+%
+%   writeHdf5Structure('noisyParameters.h5', '/noisyParameters', ...
+%   EEG.etc.noiseDetection);
+%
+% Notes:
+%   writeHdf5Structure stores the following field data types:
+%   cellstr
+%   double
+%   single
+%   string
+%   structure
 
-fileId = H5F.create(file, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
-writeGroup(fileId, ['/', strrep(root, '/', '')]);
-addDataset(fileId, ['/', strrep(root, '/', '')], structure);
+fileId = H5F.create(hdf5File, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+writeGroup(fileId, ['/', strrep(dataset, '/', '')]);
+addDataset(fileId, ['/', strrep(dataset, '/', '')], structure);
 H5F.close(fileId);
 
     function addDataset(fileId, path, structure)

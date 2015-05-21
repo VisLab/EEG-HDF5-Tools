@@ -1,12 +1,22 @@
-function hdf5Struct = readHdf5Structure(file)
-% Recursively goes through hdf5 file and loads it as structure
+function hdf5Struct = readHdf5Structure(hdf5File)
+% Reads a HDF5 file and loads it in a structure
 %
-% readHdf5Structure(file)
+% Usage:
+% readHdf5Structure(hdf5File)
 %
 % Input:
-%   file            The name of the file
+%   hdf5File        The name of the HDF5 file to read the structure from
+%
+% Output:
+%   hdf5Struct      A structure containing the contents from the HDF5 file
+%
+% Examples:
+%   Reads a HDF5 file 'noisyParameters.h5' and loads it into a structure
+%   hdf5Struct.
+%
+%   hdf5Struct = readHdf5Structure('noisyParameters.h5');
 
-fileId = H5F.open(file,'H5F_ACC_RDONLY','H5P_DEFAULT');
+fileId = H5F.open(hdf5File,'H5F_ACC_RDONLY','H5P_DEFAULT');
 hdf5Path = '/';
 childStructure = getGroupDatasets(fileId, hdf5Path);
 hdf5Path = [hdf5Path, childStructure.name];
