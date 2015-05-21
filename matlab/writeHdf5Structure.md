@@ -18,7 +18,7 @@ writeHdf5Structure(file, root, structure)
 
 ## Examples
 
-writeHdf5Structure('/path/to/hdf5file/hdf5file.h5', '/h5_dataset_1', a);
+writeHdf5Structure('noisyParameters.h5', '/noisyParameters', EEG.etc.noiseDetection);
 
 ## Notes
 writeHdf5Structure stores the following structure field data types:
