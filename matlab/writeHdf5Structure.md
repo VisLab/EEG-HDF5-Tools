@@ -10,9 +10,9 @@
 writeHdf5Structure(file, root, structure)
 
 ### Input
-* `file`: the name of the hdf5 file to write the structure to 
-* `root`: the root path in the hdf5 file to store the structure in 
-* `structure`: the structure variable containing the data
+* `hdf5File`: The name of the HDF5 file to write the structure to
+* `dataset`: The name of the HDF5 dataset to write the structure to
+* `structure`: The structure array containing the data
 
 ### Output
 
