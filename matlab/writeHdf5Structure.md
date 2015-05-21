@@ -18,7 +18,7 @@ writeHdf5Structure(file, root, structure)
 
 ## Examples
 
-writeHdf5Structure('/path/to/hdf5file/hdf5file.h5', '/', a);
+writeHdf5Structure('/path/to/hdf5file/hdf5file.h5', '/h5_dataset_1', a);
 
 ## Notes
 writeHdf5Structure stores the following structure field data types:
