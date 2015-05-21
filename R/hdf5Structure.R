@@ -3,8 +3,19 @@ library("rhdf5")
 # Reads a HDF5 file into a hdf5Structure object.
 #   np <- Hdf5Structure("file.h5")
 #   np@resampling$originalFrequency
+#
+# This is a thin wrapper around the rhdf5 library. The main addition is improved
+# laziness. R *is* lazy, but unfortunately, it's strict when you create a class,
+# the work-around is to store the actual groups as thunks in a list. It's only
+# when they are actually requested that the thunk is evaluated and the group is
+# returned.
 
-# HDReader
+# HDReader class
+# This class is not exposed and is only used internally. The main purpose of it
+# is to ease reading the HDF5 file.
+# 
+# methods
+# - .access
 setClass("HDReader",
   representation(
     file="character",
@@ -19,6 +30,8 @@ setClass("HDReader",
 }
 
 # generic access function
+# This function wraps `h5read` and simply allows you to access a group without
+# having to specify the file. It shortens the code since paths can get long
 setGeneric(".access",
   function(object, ...) {
     standardGeneric(".access")
@@ -29,7 +42,14 @@ setMethod(".access", signature(object="HDReader"),
     h5read(object@file, part)
 })
 
-# hdf5Structure
+# hdf5Structure class
+# This class is exposed and provides access to the groups in the HDF5 file.
+#
+# methods
+# - get.entry
+# - .force.eval
+# - entries
+# - write.dataset
 setClass("hdf5Structure",
   representation(
     name="ANY",
@@ -55,7 +75,9 @@ Hdf5Structure <- function(file) {
   
   list.names <- names(np@data)
   for (i in 1:length(np@data)) {
-    # wrap the attributes in functions to feign lazy evaluation
+    # wrap the attributes in functions to feign lazy evaluation. According to
+    # an answer on StackOverflow, a function should have at least one parameter,
+    # `eval=T` is just thrown in for this reason
     func <- paste("function(eval=T) {
                     return(", ".access(hd,", "\"", root, list.names[i],
                   "\")) }", sep="")
@@ -64,7 +86,8 @@ Hdf5Structure <- function(file) {
   return(np)
 }
 
-# returns an entry
+# Returns an entry from a hdf5structure. If the entry is still a closure, it
+# evaluates it before returning it
 setGeneric('get.entry', function(hdf5Structure, ...) {
     standardGeneric('get.entry')
   })
@@ -81,7 +104,9 @@ setMethod('get.entry', signature(hdf5Structure='hdf5Structure'),
     }
   })
 
-# forces evaluation of an entry
+# Forces evaluation of an entry.
+# If the section is still a closure, it evaluates the thunk and returns the
+# hdf5structure with that group evaluated. At one point this function was public
 setGeneric('.force.eval', function(hdf5Structure, ...) {
   standardGeneric('.force.eval')
 })
@@ -99,7 +124,8 @@ setMethod('.force.eval', signature(hdf5Structure='hdf5Structure'),
     }
   })
 
-# shows the entries in the object
+# Returns the entries in the object.
+# Simply returns the name of the entries in the list
 setGeneric('entries',
   function(object) {
     standardGeneric('entries')
@@ -110,18 +136,22 @@ setMethod('entries', signature(object='hdf5Structure'),
     return(names(object@data))
 })
 
-# updates or creates a new dataset
+# Updates or creates a new dataset
+# This function wraps `h5write` and behaves the same
 setGeneric('write.dataset',
   function(object, path, obj) {
     standardGeneric('write.dataset')
   })
 
-setMethod('write.dataset', signature(object='hdf5Structure', path='character', obj='ANY'),
+setMethod('write.dataset', signature(object='hdf5Structure', path='character',
+                                     obj='ANY'),
   function(object, path, obj) {
     h5write(obj, object@reader@file, path)
   })
 
-# custom show function
+# Custom show function
+# This method is invoked when print is called on an hdf5structure object or when
+# you use the REPL. Shows the filename and the groups that are in the file
 setMethod("show", signature(object='hdf5Structure'),
   function(object) {
     file <- paste("file:", object@reader@file)
