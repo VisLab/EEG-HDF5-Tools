@@ -188,7 +188,7 @@ struct <struct name> *buf = get_cmpd_data(dataset);
 ##<a name="writing"></a>Writing Data
 **Note**: the HDF5 library expects data written to files to be contiguous blocks
 of memory. Because of this, explicitly malloc'd arrays should be used. While
-this is straight-forward with arrays, writing matrices invloves 'flattening' them
+this is straight-forward with arrays, writing matrices involves 'flattening' them
 and treating an array as a matrix.
 
 ###void write_int_array(hdf5_entry_t entry, const char \*name, const hsize_t \*dims, int \*data)
@@ -377,6 +377,9 @@ int main() {
 ```
 
 ## Limitations
-Due to the nature of C, compound data types are read as raw data. However,
-certain structs are supplied to provide access to some of the more common
-compound datatypes.
+- Due to the nature of C, compound data types are read as raw data. However,
+  certain structs are supplied to provide access to some of the more common
+  compound datatypes.
+
+- Since C lacks generics, there are functions to write datasets for each data
+  type (`int`, `double`, and `char *`)

@@ -1,3 +1,13 @@
+/*
+ * This file has a lot of functions but most of them do one thing and are pretty
+ * short. The fact that C doesn't support generics also adds to the number of
+ * functions.
+ *
+ * Just like the other versions, this was written with laziness in mind. It does
+ * add some complications to the implementation but after testing with valgrind
+ * and massif, it keeps memory usage reasonably low.
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include "hdf5.h"
@@ -5,22 +15,34 @@
 #include "hdf5_struct.h"
 
 /* helper functions */
-static void         fill_entry_data(const hid_t, hdf5_entry_t);
-static void         set_dataset(hdf5_entry_t entry);
-static void         set_group(hdf5_entry_t entry);
-static void         hdf5_struct_get_entries(hdf5_struct_t);
-static void         read_dataset(hid_t root, hdf5_entry_t entry);
-static void         print_data(hdf5_entry_t entry);
-static void         print_data_type(hdf5_entry_t entry);
-static void         free_dataset(hdf5_entry_t entry);
-static void         free_group(hdf5_entry_t entry);
-static void         free_entry(hdf5_entry_t entry);
+static void fill_entry_data(const hid_t, hdf5_entry_t);
+static void set_dataset(hdf5_entry_t entry);
+static void set_group(hdf5_entry_t entry);
+static void hdf5_struct_get_entries(hdf5_struct_t);
+static void read_dataset(hid_t root, hdf5_entry_t entry);
+static void print_data(hdf5_entry_t entry);
+static void print_data_type(hdf5_entry_t entry);
+static void free_dataset(hdf5_entry_t entry);
+static void free_group(hdf5_entry_t entry);
+static void free_entry(hdf5_entry_t entry);
 static hdf5_entry_t get_entry_info(const hid_t, int);
 
 /*
  * Creates a new hdf5_struct_t from a file.
  * \param path: the path to the HDF5 file.
  * \return a pointer to a hdf5_struct_t object.
+ *
+ * Creating the `hdf5_struct` is kinda convoluted, but it's something like this:
+ * new_hdf5_struct: this is the public function that starts everything
+ *   - hdf5_struct_get_entries: allocates the array
+ *     - get_entry_info: allocates memory for each entry, gets name and type
+ *     - fill_entry_data: dispatch function based on the type of entry
+ *       - set_group: allocates the array for the entries in this group
+ *         - get_entry_info: same as above
+ *       - read_dataset: reads in the dataset based on data type
+ *
+ * new_hdf5_struct only gets the information for entries located at the root of
+ * the HDF5 file.
  */
 hdf5_struct_t new_hdf5_struct(const char *path) {
     hdf5_struct_t hdf5;
@@ -58,6 +80,14 @@ hdf5_struct_t new_hdf5_struct(const char *path) {
 /*
  * Frees the memory associated with a hdf5_struct_t object.
  * \param hdf5 the hdf5_struct_t object to free.
+ *
+ * Freeing a hdf5_struct is similar to creating one, but in reverse
+ * free_hdf5_struct: starts the process
+ *   - free_entry: dispatch function based on the entry's type
+ *     - free_group: calls `free_entry` on the entries in this group
+ *     - free_dataset: frees the array associated with the dataset
+ *
+ * Along the way all the file handles are also closed
  */
 void free_hdf5_struct(const hdf5_struct_t hdf5) {
     int i;
@@ -121,7 +151,7 @@ hdf5_entry_t get_subentry(const hdf5_entry_t entry, const char *path) {
     if (!IS_GROUP(entry)) {
         return NULL;
     }
-    int          i;
+    int i;
     hdf5_entry_t sub_entry;
     for (i = 0; i < entry->num_entries; i++) {
         if (strcmp(entry->entries[i]->name, path) == 0) {
@@ -196,8 +226,10 @@ void *get_cmpd_data(const hdf5_entry_t entry) {
  * \param dims the dimensions of the new dataset
  * \param buf the data to write
  */
-void write_int_array(hdf5_entry_t entry, const char *name, const hsize_t *dims,
-                    int *buf) {
+void write_int_array(hdf5_entry_t   entry,
+                     const char    *name,
+                     const hsize_t *dims,
+                     int           *buf) {
     if (!IS_GROUP(entry)) {
         return;
     }
@@ -213,8 +245,10 @@ void write_int_array(hdf5_entry_t entry, const char *name, const hsize_t *dims,
  * \param dims the dimensions of the new dataset
  * \param buf the data to write
  */
-void write_int_matrix(hdf5_entry_t entry, const char *name, const hsize_t *dims,
-                      int *buf) {
+void write_int_matrix(hdf5_entry_t   entry,
+                      const char    *name,
+                      const hsize_t *dims,
+                      int           *buf) {
     if (!IS_GROUP(entry)) {
         return;
     }
@@ -230,13 +264,15 @@ void write_int_matrix(hdf5_entry_t entry, const char *name, const hsize_t *dims,
  * \param dims the dimensions of the new dataset
  * \param buf the data to write
  */
-void write_double_array(hdf5_entry_t entry, const char *name, const hsize_t *dims,
-                    double *buf) {
+void write_double_array(hdf5_entry_t   entry,
+                        const char    *name,
+                        const hsize_t *dims,
+                        double        *buf) {
     if (!IS_GROUP(entry)) {
         return;
     }
     if ((H5LTmake_dataset_double(entry->id, name, 1,
-                (hsize_t *) dims, buf)) < 0) {
+                                 (hsize_t *) dims, buf)) < 0) {
         printf("failed to write dataset\n");
     }
 }
@@ -248,8 +284,10 @@ void write_double_array(hdf5_entry_t entry, const char *name, const hsize_t *dim
  * \param dims the dimensions of the new dataset
  * \param buf the data to write
  */
-void write_double_matrix(hdf5_entry_t entry, const char *name, const hsize_t *dims,
-                         double *buf) {
+void write_double_matrix(hdf5_entry_t   entry,
+                         const char    *name,
+                         const hsize_t *dims,
+                         double        *buf) {
     if (!IS_GROUP(entry)) {
         return;
     }
@@ -332,7 +370,8 @@ void print_hdf5_entry(const hdf5_entry_t entry) {
  ******************************************************************************/
 
 /*
- * Frees the memory associated with a hdf5_entry_t object.
+ * Frees the memory associated with a hdf5_entry_t object. Based on the entry's
+ * type, this functions calls the appropriate function
  * \param entry the hdf5_entry_t object to free.
  */
 static void free_entry(const hdf5_entry_t entry) {
@@ -349,7 +388,8 @@ static void free_entry(const hdf5_entry_t entry) {
 }
 
 /*
- * Frees the attributes specific to a group
+ * Frees the attributes specific to a group. Frees the entries contained in the
+ * group and closes the handle to the group
  * \param entry the group to free
  */
 static void free_group(const hdf5_entry_t entry) {
@@ -366,7 +406,8 @@ static void free_group(const hdf5_entry_t entry) {
 }
 
 /*
- * Frees the attributes specific to a dataset
+ * Frees the attributes specific to a dataset. Frees the array associated with
+ * the dataset and closes the handle to the dataset
  * \param entry the dataset to free.
  */
 static void free_dataset(const hdf5_entry_t entry) {
@@ -394,7 +435,8 @@ static void free_dataset(const hdf5_entry_t entry) {
 }
 
 /*
- * Gets the entries for a hdf5_struct_t object
+ * Gets the root entries for a hdf5_struct_t object. Allocates the array needed
+ * to store the entries.
  * \param hdf5 the hdf5_struct_t object to fill in the entries
  */
 static void hdf5_struct_get_entries(const hdf5_struct_t hdf5) {
@@ -426,7 +468,7 @@ static void hdf5_struct_get_entries(const hdf5_struct_t hdf5) {
 }
 
 /*
- * Gets the information (name and type) about an entry and initializes the entry
+ * Gets the information--name and type--about an entry and initializes the entry
  * \param root the parent group
  * \index the index of the entry
  * \return an hdf5_entry_t with filled information
@@ -448,7 +490,8 @@ static hdf5_entry_t get_entry_info(const hid_t root, int index) {
 
 /*
  * Fills is the data field of an hdf5_entry_t object if it's a dataset or fills
- * in the children entries if it's a group.
+ * in the children entries if it's a group. This function calls the appropriate
+ * function based on the entry's type and essentially evaluates the entry
  * \param root the parent group
  * \param entry the entry to fill
  */
@@ -480,7 +523,8 @@ static void set_dataset(const hdf5_entry_t entry) {
 }
 
 /*
- * Sets the attributes specific to a group
+ * Sets the attributes specific to a group. Allocates the array to store the
+ * children entries.
  * \param entry the entry to set to a group
  */
 static void set_group(const hdf5_entry_t entry) {
@@ -629,7 +673,7 @@ static void print_data_type(const hdf5_entry_t entry) {
         printf("?\n");
         return;
     }
-    switch(entry->class) {
+    switch (entry->class) {
         case H5T_INTEGER:
             printf("integer\n");
             break;
