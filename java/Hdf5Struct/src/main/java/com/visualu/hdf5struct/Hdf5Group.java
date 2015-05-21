@@ -7,9 +7,10 @@ import java.util.*;
 /**
  * A Hdf5Group corresponds to a group in a HDF5 file. It contains other
  * entries that can be either Groups or Datasets. To see the names of the
- * entries contain in a Group call the `entries` method, an Entry can be
+ * entries contained in a Group call the `entries` method, an Entry can be
  * retrieved from a Group by calling the `getEntry` method with the name of
- * the Entry. Groups also implement the Iterable interface.
+ * the Entry, alternatively `getGroup` or `getDataset` can be called to avoid
+ * casting. Groups also implement the Iterable interface.
  */
 public class Hdf5Group extends Entry implements Iterable<Entry> {
     private String path;
@@ -21,6 +22,7 @@ public class Hdf5Group extends Entry implements Iterable<Entry> {
         this.path = path;
         this.reader = reader;
         for (String entry : reader.getGroupMembers(path)) {
+            // don't evaluate the groups/datasets until they're requested
             entries.put(entry, null);
         }
     }

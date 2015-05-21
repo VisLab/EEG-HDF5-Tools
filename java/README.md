@@ -112,3 +112,8 @@ To compile a program, run
 And to run the program, run
 
     java -cp ".:Hdf5Struct.jar:<path-to-jhdf5>/lib/batteries_included/*" <file>
+
+
+#Notes
+`batteries_included.jar` is released under the Apache License 2.0. More
+information can be found [here](https://wiki-bsse.ethz.ch/display/JHDF5).
