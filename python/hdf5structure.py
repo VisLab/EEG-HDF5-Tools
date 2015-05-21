@@ -1,5 +1,9 @@
 """
 Provides functionality to read data from HDF5 files created by MATLAB.
+
+This is a thin wrapper around the h5py library. Similar to the R version, the
+biggest difference is a little more laziness and the ability to either eagerly
+read a dataset or to read it lazily.
 """
 import sys
 try:
@@ -27,10 +31,12 @@ class Hdf5Structure(object):
 
     def write_dataset(self, path, data):
         """
-        Creates and writes a new dataset in the HDF5 file
+        Creates and writes a new dataset in the HDF5 file. In order to maintain
+        a similar API between the different versions, there isn't a method to
+        create a new group
         :param path: the path of the new dataset to create
         :type path: string
-        :param data: the dataset to write to HDF5 file
+        :param data: the dataset to write to the HDF5 file
         """
         self._h5file.create_dataset(path, data=data)
 
@@ -39,7 +45,7 @@ class Hdf5Structure(object):
         Returns a lazy entry from the HDF5 file
         :param entry: the entry to retrieve
         :type entry: string
-        :return: a dictionary with either Groups or Datasets
+        :return: a dictionary with either a group or a dataset
         """
         try:
             self._h5file[entry]
@@ -59,19 +65,19 @@ class Hdf5Structure(object):
 
     def _force(self, values):
         """
-        Evaluates an entry
+        Evaluates an entry. If the entry is a group, the children entries are
+        also evaluated, if the entry is a dataset, the actual dataset is read.
         :param values: the values to evaluate
         :type values: dictionary
         """
-        forced = {}
         if type(values) == h5py.Dataset:
             return values.value
         else:
-            for key, value in values.iteritems():
-                forced[key] = self._force(value)
-
-        return forced
+            return {k: self._force(v) for k, v in values.iteritems()}
 
     def __str__(self):
+        """
+        Returns the name of the file and the entries that are in the file
+        """
         return "file: {0}\nentries: {1}".format(
             self._filename, ", ".join(self.entries()))
