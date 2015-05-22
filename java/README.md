@@ -34,7 +34,7 @@ public class Test {
         Hdf5Struct h5 = new Hdf5Struct("noiseDetection.h5");
 
         // getEntry returns a generic Entry, so the cast is necessary
-        Hdf5Group nd = (Hdf5Group) h5.getEntry("noisyDetection");
+        Hdf5Group nd = (Hdf5Group) h5.getEntry("root");
 
         // toString is overridden for Hdf5Struct, Hdf5Group, and Hdf5Dataset
         System.out.println(nd);
@@ -94,7 +94,7 @@ import com.visualu.hdf5struct.*;
 public class Test {
 	public static void main(String[] args) {
 		Hdf5Struct hdf5 = new Hdf5Struct("noiseDetection.h5");
-		hdf5.writeDataset("noiseDetection/sample", new int[]{1, 2, 3, 4});
+		hdf5.writeDataset("root/sample", new int[]{1, 2, 3, 4});
 	}
 }
 ```

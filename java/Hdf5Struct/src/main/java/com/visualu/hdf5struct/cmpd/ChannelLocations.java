@@ -16,10 +16,10 @@ public class ChannelLocations {
     private double urchan;
     private String ref;
 
-    public ChannelLocations(String labels, double theta,
+    public ChannelLocations(String labels, String type, double theta,
                             double radius, double X, double Y, double Z,
                             double sph_theta, double sph_phi, double sph_radius,
-                            String type, double urchan, String ref) {
+                            double urchan, String ref) {
         this.labels = labels;
         this.type = type;
         this.theta = theta;
@@ -47,13 +47,12 @@ public class ChannelLocations {
     static public ChannelLocations[] fromList(HDF5CompoundDataList[] list) {
         ChannelLocations[] cls = new ChannelLocations[list.length];
         for (int i = 0; i < list.length; i++) {
-            //System.out.println(list[i].get(0));
             cls[i] = new ChannelLocations(
-               ((String) list[i].get(0)), ((Double) list[i].get(1)),
+               ((String) list[i].get(0)), ((String) list[i].get(1)),
                ((Double) list[i].get(2)), ((Double) list[i].get(3)),
                ((Double) list[i].get(4)), ((Double) list[i].get(5)),
                ((Double) list[i].get(6)), ((Double) list[i].get(7)),
-               ((Double) list[i].get(8)), ((String) list[i].get(9)),
+               ((Double) list[i].get(8)), ((Double) list[i].get(9)),
                ((Double) list[i].get(10)), ((String) list[i].get(11)));
         }
         return cls;
@@ -64,11 +63,10 @@ public class ChannelLocations {
      * @return a decent String
      */
     public String toString() {
-        return "ChannelLocations{labels=" + this.labels +
-            ",theta=" + this.theta + ",radius=" + this.radius +
-            ",X=" + this.X + ",Y=" + this.Y + ",Z=" + this.Z +
-            ",sph_theta=" + this.sph_theta + ",sph_phi=" + this.sph_phi +
-            ",sph_radius=" + this.sph_radius + ",type=" + this.type +
+        return "ChannelLocations{labels=" + this.labels + ",type=" + this.type +
+            ",theta=" + this.theta + ",radius=" + this.radius + ",X=" + this.X +
+            ",Y=" + this.Y + ",Z=" + this.Z + ",sph_theta=" + this.sph_theta +
+            ",sph_phi=" + this.sph_phi + ",sph_radius=" + this.sph_radius +
             ",urchan=" + this.urchan + ",ref=" + this.ref + "}";
     }
 }
