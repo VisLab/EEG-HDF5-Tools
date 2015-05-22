@@ -58,12 +58,11 @@ setClass("hdf5Structure",
 ))
 
 # Constructor for hdf5Structure
-Hdf5Structure <- function(file) {
+Hdf5Structure <- function(file, root="/") {
   hd <- .HDReader(file)
   np <- new("hdf5Structure")
   slot(np, "reader") <- hd
   slot(np, "data") <- list()
-  root <- "/"
                 
   for (i in 1:length(hd@contents$name)) {
     row <- hd@contents[i, ]
@@ -78,9 +77,15 @@ Hdf5Structure <- function(file) {
     # wrap the attributes in functions to feign lazy evaluation. According to
     # an answer on StackOverflow, a function should have at least one parameter,
     # `eval=T` is just thrown in for this reason
-    func <- paste("function(eval=T) {
+    func <- if (root == "/") {
+              paste("function(eval=T) {
                     return(", ".access(hd,", "\"", root, list.names[i],
-                  "\")) }", sep="")
+                    "\")) }", sep="")
+            } else {
+              paste("function(eval=T) {
+                    return(", ".access(hd,", "\"", root, "/", list.names[i],
+                    "\")) }", sep="")
+            }
     np@data[[i]] <- eval(parse(text=func))
   }
   return(np)
