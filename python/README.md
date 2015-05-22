@@ -27,7 +27,7 @@ Returns a list of the entries available in the `Hdf5Structure` object.
 #####entryname: the name of the entry
 Returns a dictionary with the entries from `entryname`
 
-    >>> nd.get_entry('noiseDetection')
+    >>> nd.get_entry('root')
     {u'lineNoise': {u'tau': array([[ 100.]]), u'fScanBandWidth': array([[ 2.]]),
         u'Fs': array([[ 512.]]), u'fPassBand': array([[  45.], [ 256.]]),
         u'taperWindowStep': array([[ 1.]]), u'taperWindowSize': array([[ 4.]]),
@@ -39,12 +39,12 @@ Returns a dictionary with the entries from `entryname`
 #####entryname: the name of the entry
 Returns a `h5py.Group` or `h5py.Dataset` with the entries from `entryname`
 
-    >>> nd.get_lazy_entry('noiseDetection')
+    >>> nd.get_lazy_entry('root')
     <HDF5 group "/noiseDetection" (6 members)>
 
 you can then extract the needed value
 
-    >>> noise_det = nd.get_lazy_entry('noiseDetection')
+    >>> noise_det = nd.get_lazy_entry('root')
     >>> noise_det.keys()
     [u'highPass', u'lineNoise', u'name', u'reference', u'resampling', u'version']
     >>> version = noisy_det.get('version')
@@ -58,7 +58,7 @@ Creates and writes a new dataset to the HDF5 file.
 
 For example
 
-    >>> sample = nd.write_dataset('noiseDetection/sample', range(1, 1000))
+    >>> sample = nd.write_dataset('root/sample', range(1, 1000))
 
-will create a new dataset located at "noiseDetection/sample" consisting of the
+will create a new dataset located at "root/sample" consisting of the
 numbers 1 through 1000
