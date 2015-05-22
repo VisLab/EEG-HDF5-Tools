@@ -84,6 +84,16 @@ hdf5_entry_t get_entry(const hdf5_struct_t hdf5, const char *path);
 hdf5_entry_t get_subentry(const hdf5_entry_t entry, const char *path);
 
 /*
+ * Returns a group or NULL
+ */
+hdf5_entry_t get_group(const hdf5_entry_t entry, const char *path);
+
+/*
+ * Returns a dataset or NULL
+ */
+hdf5_entry_t get_dataset(const hdf5_entry_t entry, const char *path);
+
+/*
  * Prints a hdf5_struct_t
  */
 void print_hdf5_struct(const hdf5_struct_t hdf5);
@@ -116,7 +126,7 @@ void *get_cmpd_data(const hdf5_entry_t entry);
  * Writes an integer array
  */
 void write_int_array(hdf5_entry_t entry, const char *name, const hsize_t *dims,
-                    int *buf);
+                     int *buf);
 
 /*
  * Writes an integer matrix
@@ -127,8 +137,10 @@ void write_int_matrix(hdf5_entry_t entry, const char *name, const hsize_t *dims,
 /*
  * Writes a double array
  */
-void write_double_array(hdf5_entry_t entry, const char *name, const hsize_t *dims,
-                        double *buf);
+void write_double_array(hdf5_entry_t   entry,
+                        const char    *name,
+                        const hsize_t *dims,
+                        double        *buf);
 
 /*
  * Writes a double matrix

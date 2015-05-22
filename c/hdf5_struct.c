@@ -142,6 +142,44 @@ hdf5_entry_t get_entry(const hdf5_struct_t hdf5, const char *path) {
 }
 
 /*
+ * Returns a group from a hdf5_entry_t or NULL if the path doesn't point to a
+ * group.
+ * \param entry the hdf5_entry_t object to search through
+ * \param path the path to the group
+ * \return a hdf5_entry_t that is a group or NULL if one can't be found
+ */
+hdf5_entry_t get_group(const hdf5_entry_t entry, const char *path) {
+    hdf5_entry_t e;
+    if ((e = get_subentry(entry, path)) == NULL) {
+        return NULL;
+    }
+    if (IS_GROUP(e)) {
+        return e;
+    } else {
+        return NULL;
+    }
+}
+
+/*
+ * Returns a dataset from a hdf5_entry_t or NULL if the path doesn't point to a
+ * dataset
+ * \param entry the hdf5_entry_t object to search through
+ * \param path the path to the dataset
+ * \return a hdf5_entry_t that is a dataset or NULL if one can't be found
+ */
+hdf5_entry_t get_dataset(const hdf5_entry_t entry, const char *path) {
+    hdf5_entry_t e;
+    if ((e = get_subentry(entry, path)) == NULL) {
+        return NULL;
+    }
+    if (!IS_GROUP(e)) {
+        return e;
+    } else {
+        return NULL;
+    }
+}
+
+/*
  * Returns a specific sub entry in a hdf5_entry_t object.
  * \param entry the hdf5_entry_t object to search for the sub entry in
  * \param path the path to the sub entry

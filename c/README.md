@@ -140,6 +140,14 @@ if ((dataset_c = get_subentry(groupB, "dataC")) == NULL) {
 }
 ```
 
+###hdf5_entry_t get_group(hdf5_entry_t entry, char \*path)
+Similar to `get_subentry` but the returned entry is guaranteed to be a group.
+Returns `NULL` if a group can't be found.
+
+###hdf5_entry_t get_dataset(hdf5_entry_t entry, char \*path)
+Simialr to `get_subentry` but the returned entry is guaranteed to be a dataset.
+Returns `NULL` if a dataset can't be found.
+
 ##<a name="data"></a>Accessing Data from Datasets
 ###int \*\*get_int_data(hdf5_entry_t entry)
 Returns the int data associated with a `hdf5_entry_t` object or `NULL` if the
@@ -338,21 +346,11 @@ int main() {
     // create the initial hdf5_struct_t object
     hdf5_struct_t hdf5 = new_hdf5_struct(file);
 
-    hdf5_entry_t nd = get_entry(hdf5, "noiseDetection");
-
-    // get the entry named 'highPass' in the noiseDetection group
-    hdf5_entry_t high_pass = get_subentry(nd, "highPass");
-
-    // print basic information about the entries in high_pass
-    int i;
-    for (i = 0; i < NUM_ENTRY(high_pass); i++) {
-        print_hdf5_entry(ENTRY_AT(high_pass, i));
-        printf("\n");
-    }
+    hdf5_entry_t nd = get_entry(hdf5, "root");
 
     /* Accessing compound data types */
-    hdf5_entry_t ref = get_subentry(nd, "reference");
-    hdf5_entry_t channel_loc = get_subentry(ref, "channelLocations");
+    hdf5_entry_t ref = get_group(nd, "reference");
+    hdf5_entry_t channel_loc = get_dataset(ref, "channelLocations");
     print_hdf5_entry(channel_loc);
     printf("\n");
 
@@ -360,13 +358,12 @@ int main() {
     struct channel_locations *buf = get_cmpd_data(channel_loc);
 
     // print the actual data
+    int i;
     for (i = 0; i < X_DIM(channel_loc); i++) {
         print_channel_locations(buf[i]);
         // unfortunately, free_hdf5_struct does not free memory associated
         // with compound data types, only the related buffer
-        free(buf[i].labels);
-        free(buf[i].type);
-        free(buf[i].ref);
+        free_channel_locations(buf[i]);
     }
 
     // finally release the memory associated with the hdf5_struct_t
