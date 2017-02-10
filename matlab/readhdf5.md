@@ -1,6 +1,6 @@
-#readHdf5Structure
+#h52struct
 
-*readHdf5Structure* is a function that reads a HDF5 file and loads it in a structure. 
+*h52struct* is a function that reads a HDF5 file and loads it in a structure. 
 
 ## Dependencies
 * [HDF5](http://www.hdfgroup.org/HDF5/)
@@ -8,7 +8,7 @@
 * MATLAB 
 
 ## Functions and Methods
-hdf5Struct = readHdf5Structure(file)
+hdf5Data = h52struct(file)
 
 ### Input
 * `hdf5File`: The name of the HDF5 file to create the structure from.
@@ -21,10 +21,10 @@ hdf5Struct = readHdf5Structure(file)
 
 Reads a HDF5 file 'noisyParameters.h5' and loads it into a structure 'hdf5Data'.
 
-`hdf5Data = readhdf5('noisyParameters.h5');`
+`hdf5Data = h52struct('noisyParameters.h5');`
 
 Reads a HDF5 file 'CT2WS_fold1_results.hdf5' and read dataset '/optimizer_weights/param_1'.
 
-`hdf5Data = readhdf5('CT2WS_fold1_results.hdf5', '/optimizer_weights/param_1');`
+`hdf5Data = h52struct('CT2WS_fold1_results.hdf5', '/optimizer_weights/param_1');`
 
 
