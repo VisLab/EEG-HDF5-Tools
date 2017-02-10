@@ -1,6 +1,6 @@
-#h52struct
+#struct2h5
 
-*h52struct* is a function that stores a MATLAB structure in a hdf5 file. 
+*struct2h5* is a function that stores a MATLAB structure in a hdf5 file. 
 
 ## Dependencies
 * [HDF5](http://www.hdfgroup.org/HDF5/)
@@ -21,10 +21,10 @@ h52struct(hdf5File, group, structure)
 
 Creates a HDF5 file 'noisyParameters.h5' and writes the contents of the structure EEG.etc.noiseDetection to dataset /noisyParameters.
 
-`h52struct('noisyParameters.h5', '/noisyParameters', EEG.etc.noiseDetection);`
+`struct2h5('noisyParameters.h5', '/noisyParameters', EEG.etc.noiseDetection);`
 
 ## Notes
-writeHdf5Structure stores the following structure field data types:
+struct2h5 stores the following structure field data types:
 * `cellstr`
 * `double`
 * `single`
