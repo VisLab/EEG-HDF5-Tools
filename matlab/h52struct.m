@@ -6,10 +6,10 @@
 %
 % Usage:
 %
-%   >> hdf5Data = readhdf5(hdf5File)
+%   >> hdf5Data = h52struct(hdf5File)
 %
 %
-%   >> hdf5Data = readhdf5(hdf5File, groupPath)
+%   >> hdf5Data = h52struct(hdf5File, groupPath)
 %
 % Input:
 %
@@ -17,28 +17,28 @@
 %                   The name of the HDF5 file to create the structure from.
 %
 %   objectPath
-%                   The path to the object.  and its assoicated datasets to
-%                   retrieve from the HDF5 file.
+%                   The path to a HDF5 dataset or a group. If the path is
+%                   a group then its assoicated datasets are retrieved. 
 %
 % Output:
 %
 %   hdf5Data
-%                   Thecontaining the contents from the HDF5 file.
+%                   The contents retrieved from the HDF5 file.
 %
 % Examples:
 %
 %   Reads a HDF5 file 'noisyParameters.h5' and loads it into a structure
 %   'hdf5Data'.
 %
-%   hdf5Data = readHdf5Structure('noisyParameters.h5');
+%   hdf5Data = h52struct('noisyParameters.h5');
 %
 %   Reads a HDF5 file 'CT2WS_fold1_results.hdf5' and read dataset 
 %   '/optimizer_weights/param_1'.
 %
-%   hdf5Data = readHdf5Structure('CT2WS_fold1_results.hdf5', 
+%   hdf5Data = h52struct('CT2WS_fold1_results.hdf5', 
 %   '/optimizer_weights/param_1');
 
-function hdf5Data = readhdf5(hdf5File, varargin)
+function hdf5Data = h52struct(hdf5File, varargin)
 p = parseArguments(hdf5File, varargin{:});
 try
     fileId = H5F.open(hdf5File,'H5F_ACC_RDONLY','H5P_DEFAULT');
@@ -256,4 +256,4 @@ end
         p = p.Results;
     end % parseArguments
 
-end % readhdf5
+end % h52struct

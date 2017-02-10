@@ -2,7 +2,7 @@
 %
 % Usage:
 % 
-%   >> writehdf5(hdf5File, group, structure)
+%   >> struct2h5(hdf5File, group, structure)
 %
 % Input:
 %
@@ -21,7 +21,7 @@
 %   Creates a HDF5 file 'noisyParameters.h5' and writes the contents of the
 %   structure EEG.etc.noiseDetection to dataset /noisyParameters.
 %
-%   writehdf5('noisyParameters.h5', '/noisyParameters', ...
+%   struct2h5('noisyParameters.h5', '/noisyParameters', ...
 %   EEG.etc.noiseDetection);
 %
 % Notes:
@@ -34,7 +34,7 @@
 %   string
 %   structure
 
-function writehdf5(hdf5File, group, structure)
+function struct2h5(hdf5File, group, structure)
 fileId = H5F.create(hdf5File, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', ...
     'H5P_DEFAULT');
 writeGroup(fileId, ['/', strrep(group, '/', '')]);
@@ -92,4 +92,4 @@ H5F.close(fileId);
         end
     end % isNestedStructure
 
-end % writehdf5
+end % struct2h5
