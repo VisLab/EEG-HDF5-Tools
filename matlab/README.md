@@ -1,4 +1,4 @@
-The EEG-HEDF5-Tools matlab package provides functions for reading and writing structures from and into HDF5 files. *readHdf5Structure* is a function that reads a HDF5 file and loads it in a structure. *writeHdf5Structure* is a function that stores a MATLAB structure in a hdf5 file. 
+The EEG-HEDF5-Tools matlab package provides functions for converting EEG data into HDF5 files and vice versa. *readHdf5Structure* is a function that reads a HDF5 file and loads it in a structure. *writeHdf5Structure* is a function that stores a MATLAB structure in a hdf5 file. 
 
 ## Dependencies
 * [HDF5](http://www.hdfgroup.org/HDF5/)
