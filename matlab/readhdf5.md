@@ -21,10 +21,10 @@ hdf5Struct = readHdf5Structure(file)
 
 Reads a HDF5 file 'noisyParameters.h5' and loads it into a structure 'hdf5Data'.
 
-`hdf5Data = readHdf5Structure('noisyParameters.h5');`
+`hdf5Data = readhdf5('noisyParameters.h5');`
 
 Reads a HDF5 file 'CT2WS_fold1_results.hdf5' and read dataset '/optimizer_weights/param_1'.
 
-`hdf5Data = readHdf5Structure('CT2WS_fold1_results.hdf5', '/optimizer_weights/param_1');`
+`hdf5Data = readhdf5('CT2WS_fold1_results.hdf5', '/optimizer_weights/param_1');`
 
 
