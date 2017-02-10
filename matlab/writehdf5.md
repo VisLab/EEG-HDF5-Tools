@@ -4,15 +4,16 @@
 
 ## Dependencies
 * [HDF5](http://www.hdfgroup.org/HDF5/)
+* [JSONlab](https://www.mathworks.com/matlabcentral/fileexchange/33381-jsonlab--a-toolbox-to-encode-decode-json-files)
 * MATLAB 
 
 ## Functions and Methods
 writeHdf5Structure(file, root, structure)
 
 ### Input
-* `hdf5File`: The name of the HDF5 file to write the structure to
-* `dataset`: The name of the HDF5 dataset to write the structure to
-* `structure`: The structure array containing the data
+* `hdf5File`: The name of the HDF5 file to write the structure to.
+* `group`: The name of the HDF5 group to write the structure data under. 
+* `structure`: The structure array containing the data.
 
 ### Output
 
@@ -20,7 +21,7 @@ writeHdf5Structure(file, root, structure)
 
 Creates a HDF5 file 'noisyParameters.h5' and writes the contents of the structure EEG.etc.noiseDetection to dataset /noisyParameters.
 
-writeHdf5Structure('noisyParameters.h5', '/noisyParameters', EEG.etc.noiseDetection);
+`writehdf5('noisyParameters.h5', '/noisyParameters', EEG.etc.noiseDetection);`
 
 ## Notes
 writeHdf5Structure stores the following structure field data types:
