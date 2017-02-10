@@ -5,6 +5,7 @@
 ## Dependencies
 * [HDF5](http://www.hdfgroup.org/HDF5/)
 * MATLAB 
+* JSONlab
 
 ## Functions and Methods
 hdf5Struct = readHdf5Structure(file)
