@@ -1,3 +1,6 @@
+*readHdf5Structure* is a function that reads a HDF5 file and loads it in a structure. 
+*writeHdf5Structure* is a function that stores a MATLAB structure in a hdf5 file. 
+
 ## Dependencies
 * [HDF5](http://www.hdfgroup.org/HDF5/)
 * [JSONlab](https://www.mathworks.com/matlabcentral/fileexchange/33381-jsonlab--a-toolbox-to-encode-decode-json-files)
