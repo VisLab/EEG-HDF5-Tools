@@ -1,14 +1,19 @@
-function writeSingle(fileId, dataset, value)
-% Writes a single precision dataset to the specified HDF5 file
+% Writes a single precision dataset to the specified HDF5 file.
 %
-% writeSingle(fileId, dataset, value)
+%   >> writeSingle(fileId, dataset, value)
 %
 % Input:
-%   fileId            The file id
-%   dataset           The path of the dataset
-%   value             The value of the dataset
+%
+%   fileId            
+%                     The file id.
+%
+%   dataset           The path of the dataset.
+%
+%   value             
+%                     The value of the dataset.
 %
 
+function writeSingle(fileId, dataset, value)
 emptyDims = [];
 if isempty(value)
     emptyDims = size(value);
@@ -27,6 +32,4 @@ H5S.close(spaceId);
 if ~isempty(emptyDims)
     writeDoubleAttribute(fileId, dataset, 'dims', emptyDims);
 end
-
 end % writeSingle
-

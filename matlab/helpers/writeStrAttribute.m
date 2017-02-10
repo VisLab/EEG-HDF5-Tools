@@ -1,15 +1,22 @@
-function writeStrAttribute(fileId, dataset, attribute, value)
-% Writes a string attribute to the specified HDF5 file
+% Writes a string attribute to the specified HDF5 file.
 %
-% writeStrAttribute(fileId, dataset, value)
+%   >> writeStrAttribute(fileId, dataset, value)
 %
 % Input:
-%   fileId            The file id
-%   dataset           The path of the dataset
-%   attribute         The name of the attribute
-%   value             The value of the attribute
+%
+%   fileId            The file id.
+%
+%   dataset           
+%                     The path of the dataset.
+%
+%   attribute         
+%                     The name of the attribute.
+%
+%   value             
+%                     The value of the attribute.
 %
 
+function writeStrAttribute(fileId, dataset, attribute, value)
 valueType = H5T.copy('H5T_FORTRAN_S1');
 H5T.set_size(valueType, numel(value));
 memType = H5T.copy ('H5T_C_S1');
@@ -22,6 +29,4 @@ H5A.write(attributeId, valueType, value);
 H5A.close(attributeId);
 H5D.close(datasetId);
 H5S.close(spaceId);
-
 end % writeStrAttribute
-

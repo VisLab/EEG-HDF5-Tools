@@ -1,14 +1,20 @@
-function writeCellStr(fileId, dataset, value)
-% Writes a cellstr dataset to the specified HDF5 file
+% Writes a cellstr dataset to the specified HDF5 file.
 %
-% writeCellStr(fileId, dataset, value)
+%   >> writeCellStr(fileId, dataset, value)
 %
 % Input:
-%   fileId            The file id 
-%   dataset           The path of the dataset 
-%   value             The value of the dataset
+%
+%   fileId            
+%                     The file id.
+%
+%   dataset           
+%                     The path of the dataset.
+%
+%   value             
+%                     The value of the dataset.
 %
 
+function writeCellStr(fileId, dataset, value)
 fileType = H5T.copy('H5T_FORTRAN_S1');
 H5T.set_size(fileType, 'H5T_VARIABLE');
 memType = H5T.copy('H5T_C_S1');
@@ -20,5 +26,4 @@ datasetId = H5D.create (fileId, dataset, fileType, spaceId, 'H5P_DEFAULT');
 H5D.write(datasetId, memType, 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT', value);
 H5D.close(datasetId);
 H5S.close(spaceId);
-
 end % writeCellStr

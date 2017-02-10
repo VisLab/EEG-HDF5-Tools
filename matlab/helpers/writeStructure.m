@@ -1,14 +1,20 @@
-function writeStructure(fileId, dataset, value)
-% Writes a structure dataset to the specified HDF5 file
+% Writes a structure dataset to the specified HDF5 file.
 %
-% writeStructure(fileId, dataset, value)
+%   >> writeStructure(fileId, dataset, value)
 %
 % Input:
-%   fileId            The file id
-%   dataset           The path of the dataset
-%   value             The value of the dataset
+%
+%   fileId            
+%                     The file id.
+%
+%   dataset           
+%                     The path of the dataset.
+%
+%   value             
+%                     The value of the dataset.
 %
 
+function writeStructure(fileId, dataset, value)
 dim = length(value);
 [value, dataTypes, dataSizes] = getStructureInfo(value);
 [memType, fileType] = constructStructure(value, dataTypes, dataSizes);
@@ -119,4 +125,3 @@ H5S.close(spaceId);
     end % findFirstNonEmptyIndex
 
 end % writeStructure
-

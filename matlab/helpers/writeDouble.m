@@ -1,14 +1,20 @@
-function writeDouble(fileId, dataset, value)
-% Writes a double precision dataset to the specified HDF5 file
+% Writes a double precision dataset to the specified HDF5 file.
 %
-% writeDouble(fileId, dataset, value)
+%   >> writeDouble(fileId, dataset, value)
 %
 % Input:
-%   fileId            The file id
-%   dataset           The path of the dataset
-%   value             The value of the dataset
+%
+%   fileId            
+%                     The file id.
+%
+%   dataset           
+%                     The path of the dataset.
+%
+%   value             
+%                     The value of the dataset.
 %
 
+function writeDouble(fileId, dataset, value)
 emptyDims = [];
 datasetIsLogical = 'false';
 if isempty(value)
@@ -34,4 +40,3 @@ if ~isempty(emptyDims)
 end
 writeStrAttribute(fileId, dataset, 'islogical', datasetIsLogical);
 end % writeDouble
-
