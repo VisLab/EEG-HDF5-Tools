@@ -1,6 +1,6 @@
-#writeHdf5Structure
+#h52struct
 
-*writeHdf5Structure* is a function that stores a MATLAB structure in a hdf5 file. 
+*h52struct* is a function that stores a MATLAB structure in a hdf5 file. 
 
 ## Dependencies
 * [HDF5](http://www.hdfgroup.org/HDF5/)
@@ -8,7 +8,7 @@
 * MATLAB 
 
 ## Functions and Methods
-writeHdf5Structure(file, root, structure)
+h52struct(hdf5File, group, structure)
 
 ### Input
 * `hdf5File`: The name of the HDF5 file to write the structure to.
@@ -21,7 +21,7 @@ writeHdf5Structure(file, root, structure)
 
 Creates a HDF5 file 'noisyParameters.h5' and writes the contents of the structure EEG.etc.noiseDetection to dataset /noisyParameters.
 
-`writehdf5('noisyParameters.h5', '/noisyParameters', EEG.etc.noiseDetection);`
+`h52struct('noisyParameters.h5', '/noisyParameters', EEG.etc.noiseDetection);`
 
 ## Notes
 writeHdf5Structure stores the following structure field data types:
