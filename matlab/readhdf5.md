@@ -4,8 +4,8 @@
 
 ## Dependencies
 * [HDF5](http://www.hdfgroup.org/HDF5/)
+* [JSONlab](https://www.mathworks.com/matlabcentral/fileexchange/33381-jsonlab--a-toolbox-to-encode-decode-json-files)
 * MATLAB 
-* JSONlab
 
 ## Functions and Methods
 hdf5Struct = readHdf5Structure(file)
