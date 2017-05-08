@@ -16,6 +16,8 @@
 %   hdf5File
 %                   The name of the HDF5 file to create the structure from.
 %
+%   Optional:
+%
 %   objectPath
 %                   The path to a HDF5 dataset or a group. If the path is
 %                   a group then its assoicated datasets are retrieved. 
@@ -42,7 +44,7 @@ function hdf5Data = h52struct(hdf5File, varargin)
 p = parseArguments(hdf5File, varargin{:});
 try
     fileId = H5F.open(hdf5File,'H5F_ACC_RDONLY','H5P_DEFAULT');
-    rootPath = strtrim(p.groupPath);
+    rootPath = strtrim(p.objectPath);
     if isempty(rootPath)
        fprintf('Path is empty ... using root path\n'); 
        rootPath = '/';
@@ -251,7 +253,7 @@ end
         % Parses the arguements passed in and returns the results
         p = inputParser();
         p.addRequired('hdf5File', @(x) (~isempty(x) && ischar(x)));
-        p.addOptional('groupPath', '/', @ischar);
+        p.addOptional('objectPath', '/', @ischar);
         p.parse(hdf5File, varargin{:});
         p = p.Results;
     end % parseArguments
