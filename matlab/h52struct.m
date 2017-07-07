@@ -42,23 +42,29 @@
 
 function hdf5Data = h52struct(hdf5File, varargin)
 p = parseArguments(hdf5File, varargin{:});
+fileId = -1;
 try
     fileId = H5F.open(hdf5File,'H5F_ACC_RDONLY','H5P_DEFAULT');
-    rootPath = strtrim(p.objectPath);
-    if isempty(rootPath)
-       fprintf('Path is empty ... using root path\n'); 
-       rootPath = '/';
-    elseif ~isequal(rootPath,'/') && rootPath(end) == '/';
-        rootPath = rootPath(1:end-1);
-    end
-    hdf5Data = readData(fileId, rootPath);
+    formattedPath = formatObjectPath(p.objectPath);
+    hdf5Data = readData(fileId, formattedPath);
     H5F.close(fileId);
-catch
-    hdf5Data = [];
+catch ME
     if fileId ~= -1
         H5F.close(fileId);
     end
+    rethrow(ME);
 end
+
+    function formattedPath = formatObjectPath(objectPath)
+        % Format the object path 
+        formattedPath = strtrim(objectPath);
+        if isempty(formattedPath)
+           fprintf('Path is empty ... using root path\n'); 
+           formattedPath = '/';
+        elseif ~isequal(formattedPath,'/') && formattedPath(end) == '/';
+            formattedPath = formattedPath(1:end-1);
+        end        
+    end % formatObjectPath
 
     function hdf5Data = readData(fileId, rootPath)
         % Read the data associated with the HDF5 file path
