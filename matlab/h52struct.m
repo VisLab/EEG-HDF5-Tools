@@ -133,7 +133,9 @@ end
     function dataset = postProcessDataset(dataset, datasetId, ...
             isStructField)
         % Processes the dataset
-        if isstruct(dataset)
+        if iscell(dataset)
+            dataset = parseCellOfCellStrs(dataset);
+        elseif isstruct(dataset)
             dataset = struct2StructArray(dataset);
         elseif ischar(dataset)
             ndim = numel(size(dataset));
@@ -160,6 +162,20 @@ end
             end
         end
     end % postProcessDataset
+
+    function dataset = parseCellOfCellStrs(dataset)
+        % Parse cell array of cellstrs so it can be read in MATLAB
+        % correctly
+        numberOfElements = length(dataset);
+        for a = 1:numberOfElements
+            if strcmpi(dataset{a}, '[]')
+                dataset{a} = str2num(dataset{a});
+            else
+                dataset{a} = regexprep(dataset{a},'[''''\[\]]','');
+                dataset{a} = strtrim(strsplit(dataset{a}, ','));
+            end
+        end
+    end % parseCellOfCellStrs
 
     function attributeValue = readAttribute(datasetId, attribute)
         % Reads a attribute
