@@ -30,6 +30,7 @@ H5D.write(datasetId, valueType, 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT', ...
 H5D.close(datasetId);
 H5S.close(spaceId);
 if ~isempty(emptyDims)
-    writeDoubleAttribute(fileId, dataset, 'dims', emptyDims);
+    writeDoubleAttribute(fileId, ...
+        dataset, 'dims', emptyDims);
 end
 end % writeSingle

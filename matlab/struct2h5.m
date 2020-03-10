@@ -2,11 +2,11 @@
 %
 % Usage:
 % 
-%   >> struct2h5(hdf5File, group, structure)
+%   >> struct2h5(fid, group, structure)
 %
 % Input:
 %
-%   hdf5File        
+%   fid        
 %                   The name of the HDF5 file to write the data to.
 %
 %   group         
@@ -34,13 +34,18 @@
 %   string
 %   structure
 
-function struct2h5(hdf5File, h5data, varargin)
-p = parseArguments(hdf5File, h5data, varargin);
+function struct2h5(fid, h5data, groupPath)
+p = parseArguments(fid, h5data, groupPath);
+
+% Initialize fileId
 fileId = -1;
+% Flag for creation of initial hearichical strucutre
+% flag_init = false;
 try
-    fileId = getFileId(p.hdf5File);
+    %fileId = getFileId(p.hdf5File);
+    fileId = fid;
     formattedPath = formatGroupPath(p.groupPath);
-    if formattedPath ~= '/'
+    if ~strcmpi(formattedPath, '/')
         writeGroup(fileId, formattedPath);
     end
     if isstruct(h5data)
@@ -48,7 +53,8 @@ try
     else
         addDataset(fileId, formattedPath, inputname(2), h5data);
     end
-    H5F.close(fileId);
+    % We close the file ourselves
+    % H5F.close(fileId);
 catch ME
     if fileId ~= -1
         H5F.close(fileId);
@@ -81,9 +87,9 @@ end
     function addDataset(fileId, groupPath, datasetName, dataset)
         % Writes the dataset to the file under the specified path
         switch class(dataset)
-            case 'cellstr'
-                writeCellStr(fileId, [groupPath, '/', datasetName], ...
-                    {dataset})
+%             case 'cellstr'
+%                 writeCellStr(fileId, [groupPath, '/', datasetName], ...
+%                     {dataset})
             case 'char'
                 writeStr(fileId, [groupPath, '/', datasetName], dataset);
             case 'double'
@@ -97,7 +103,8 @@ end
                     dataset);
             case 'struct'
                 if isscalar(dataset)
-                    writeGroup(fileId, [groupPath, '/', datasetName]);
+                    writeGroup(fileId, ...
+                        [groupPath, '/', datasetName]);
                     addStructureDatasets(fileId, ...
                         [groupPath, '/', datasetName], dataset);
                 elseif ~isscalar(dataset) && ...
@@ -105,6 +112,9 @@ end
                     writeStructure(fileId, ...
                         [groupPath, '/', datasetName], dataset);
                 end
+            case 'cell'
+                writeCell(fileId,...
+                    [groupPath, '/', datasetName], dataset);
         end
     end % addDataset
 
@@ -130,13 +140,13 @@ end
         end
     end % isNestedStructure
 
-    function p = parseArguments(hdf5File, h5data, varargin)
+    function p = parseArguments(fid, h5data, groupPath)
         % Parses the arguements passed in and returns the results
         p = inputParser();
-        p.addRequired('hdf5File', @(x) ~isempty(x) && ischar(x));
+        p.addRequired('fid');
         p.addRequired('h5data');
         p.addOptional('groupPath', '/', @(x) isempty(x) || ischar(x));
-        p.parse(hdf5File, h5data, varargin{:});
+        p.parse(fid, h5data, groupPath);
         p = p.Results;
     end % parseArguments
 
